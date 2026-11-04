@@ -166,6 +166,8 @@ class RequestValidator:
             return False, f"Timestamp out of bounds (drift: {time_diff}s > {self.max_clock_skew_seconds}s)"
 
         # 3. Nonce uniqueness (in-memory anti-replay check)
+        # Note: Educational in-memory store; production deployments require strictly atomic check-and-insert
+        # (e.g., Redis SETNX or SQL unique constraint transaction) across distributed nodes.
         if req.nonce in self.seen_nonces:
             return False, f"Replay detected: nonce '{req.nonce}' has already been processed"
 

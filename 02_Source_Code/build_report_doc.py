@@ -133,19 +133,19 @@ def generate_report():
     section = doc.sections[0]
     section.page_width = Cm(21.0)
     section.page_height = Cm(29.7)
-    section.top_margin = Cm(1.60)
-    section.bottom_margin = Cm(1.60)
-    section.left_margin = Cm(1.70)
-    section.right_margin = Cm(1.70)
+    section.top_margin = Cm(1.45)
+    section.bottom_margin = Cm(1.45)
+    section.left_margin = Cm(1.60)
+    section.right_margin = Cm(1.60)
 
     add_header_footer(section)
 
     normal_style = doc.styles['Normal']
     normal_style.font.name = 'Times New Roman'
-    normal_style.font.size = Pt(10.0)
+    normal_style.font.size = Pt(9.5)
     normal_style.font.color.rgb = RGBColor(33, 33, 33)
 
-    def add_p(text="", space_before=0, space_after=1.0, line_spacing=1.01, align=WD_ALIGN_PARAGRAPH.JUSTIFY):
+    def add_p(text="", space_before=0, space_after=0.4, line_spacing=1.0, align=WD_ALIGN_PARAGRAPH.JUSTIFY):
         p = doc.add_paragraph(text)
         p.alignment = align
         p.paragraph_format.space_before = Pt(space_before)
@@ -154,7 +154,7 @@ def generate_report():
         return p
 
     def add_h1(text):
-        p = add_p(space_before=2.5, space_after=0.4, line_spacing=1.01, align=WD_ALIGN_PARAGRAPH.LEFT)
+        p = add_p(space_before=1.5, space_after=0.2, line_spacing=1.0, align=WD_ALIGN_PARAGRAPH.LEFT)
         p.paragraph_format.keep_with_next = True
         run = p.add_run(text)
         run.bold = True
@@ -201,7 +201,7 @@ def generate_report():
     p_abs.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
     p_abs.paragraph_format.space_before = Pt(0)
     p_abs.paragraph_format.space_after = Pt(0)
-    p_abs.paragraph_format.line_spacing = 1.03
+    p_abs.paragraph_format.line_spacing = 1.0
     r_ab_b = p_abs.add_run("Abstract— ")
     r_ab_b.bold = True
     r_ab_b.font.size = Pt(8.8)
@@ -226,7 +226,7 @@ def generate_report():
     )
     r_ab_t.font.size = Pt(8.8)
 
-    p_kw = add_p(space_before=1.5, space_after=3.5)
+    p_kw = add_p(space_before=1.0, space_after=1.5)
     r_kw_b = p_kw.add_run("Keywords: ")
     r_kw_b.bold = True
     r_kw_b.font.size = Pt(8.3)
@@ -277,11 +277,19 @@ def generate_report():
     p.add_run(
         "RSA supports two distinct operational primitives designed for contrasting security goals:\n"
         "• Asymmetric Encryption (Confidentiality): The sender encrypts plaintext using the recipient's public key (e, n); only the recipient's private key d can decrypt. "
-        "Modern systems require RSA-OAEP (Optimal Asymmetric Encryption Padding, RFC 8017 [2]), which uses two hash-based masking rounds to achieve provable IND-CCA2 security.\n"
+        "Modern systems employ RSA-OAEP (Optimal Asymmetric Encryption Padding, RFC 8017 Section 7.1 [2]). In the Random Oracle Model (ROM), RSA-OAEP achieves provable IND-CCA2 security "
+        "under the RSA partial-domain one-wayness assumption (Fujisaki et al., 2001; Bellare-Rogaway, 1994), rather than an unconditional standard-model reduction. "
+        "While RSAES-OAEP serves as the underlying asymmetric encryption scheme, its payload size is strictly bounded by mLen <= k - 2hLen - 2 (RFC 8017 Section 7.1.1); "
+        "consequently, industrial architectures deploy it within hybrid encryption for RSA key transport—encapsulating ephemeral symmetric keys (e.g., 256-bit AES-GCM per NIST SP 800-56B Rev. 2 [5]) "
+        "to secure high-throughput bulk data streaming.\n"
         "• Digital Signatures (Authenticity, Integrity, Non-Repudiation Evidence): The signer processes message digest M using private key d to produce signature S = (EM)^d mod n. "
         "Any party possessing public key e verifies that EM ≡ S^e mod n. Under RFC 8017 and NIST FIPS 186-5 [2], [4], RSA-PSS (Probabilistic Signature Scheme) is the state-of-the-art standard. "
         "PSS incorporates a randomized salt into EMSA-PSS encoding, establishing a tight security reduction to the RSA problem in the Random Oracle Model (EUF-CMA security). "
-        "Crucially, while a digital signature provides cryptographic non-repudiation evidence, full legal non-repudiation requires trusted identity binding, secure key custody, and operational controls."
+        "Crucially, while a digital signature provides cryptographic non-repudiation evidence, full legal non-repudiation requires trusted identity binding, secure key custody, and operational controls.\n"
+        "• Cryptographic Key Separation (NIST FIPS 186-5 Section 5.1 / SP 800-57): A vital security mandate in asymmetric cryptography is strict key separation. "
+        "NIST FIPS 186-5 Section 5.1 explicitly dictates that an RSA key pair designated for digital signatures shall not be used for any other purpose, such as key establishment or encryption (RSA-OAEP). "
+        "Multi-purpose key reuse exposes systems to cross-protocol interaction attacks, undermines non-repudiation auditing, and expands compromise blast radius. "
+        "Architectures deploying both signing and key transport must enforce separate key pairs, distinct certificate bindings, and independent key-management policies."
     )
 
     # Figure 1: RSA-PSS Workflow
@@ -346,7 +354,7 @@ def generate_report():
         ["Key Size / Sig Size", 
          "Modulus: 256 B\nSig: 256 B\nDER PubKey: ~294 B", 
          "Modulus: 384 B\nSig: 384 B\nDER PubKey: ~422 B", 
-         "PubKey: 33 B (comp)\nBitcoin: ~70–72 B (DER; measured 71 B)\nEthereum: 65 B (r||s||v), RLP; 64 B (ERC-2098)", 
+         "PubKey: 33 B (comp)\nBitcoin: 70–72 B (71 B sample)\nEthereum: 65 B (r||s||v), RLP; 64 B (ERC-2098)", 
          "PubKey: 32 B (x-only)\nBIP341: 64 B (DEFAULT)\nor 65 B (explicit sighash)", 
          "PubKey: 32 B\nSig: 64 B [11]"],
         ["Relative Verify Speed", 
@@ -412,29 +420,32 @@ def generate_report():
     )
 
     add_h2("3.2 The Operational Value of RSA in Off-Chain Systems")
-    p = add_p()
+    p = add_p(space_before=0, space_after=0.2, line_spacing=1.0)
     p.add_run(
         "Despite on-chain limitations, RSA provides distinct benefits in off-chain exchange backends: "
-        "(1) Asymmetric Verification Speed: RSA public exponentiation (e = 65,537) requires only 17 modular multiplications, enabling rapid verification. "
-        "For an off-chain API gateway verifying incoming requests, RSA provides high verification throughput. "
+        "(1) Asymmetric Verification Speed: RSA public exponentiation with e = 65,537 = 2¹⁶ + 1 = 10000000000000001₂ (17 bits, Hamming weight 2) requires only 16 modular squarings "
+        "and 1 modular multiplication under straightforward square-and-multiply exponentiation (17 operations total), enabling rapid verification at edge gateways. "
         "(2) Hardware Security Module (HSM) Integration: Enterprise banking infrastructure and secure enclaves feature mature hardware support for RSA modular arithmetic. "
         "(3) Avoidance of Scalar Nonce Reuse Hazards: Standard ECDSA is fragile against nonce failure: if the signing nonce k repeats or exhibits slight bit bias, "
         "the private key is algebraically exposed. While RSA-PSS eliminates scalar nonce leakage, it does not remove all side-channel risks: "
         "implementations must employ base blinding (randomizing the base integer with a secret factor r prior to modular exponentiation: x' = x · r^e mod n) "
         "to mitigate timing side-channel attacks. Crucially, blinding alone does not prevent hardware fault injection such as the Bellcore attack on Chinese Remainder "
         "Theorem (CRT) implementations [7]. In CRT-based signing, the signer computes s_p = m^(d_p) mod p and s_q = m^(d_q) mod q, where m = OS2IP(EM) is the integer "
-        "message representative produced by EMSA-PSS-ENCODE(M) (RFC 8017 Section 8.1 / 9.1 [2]). If an induced hardware fault corrupts s_q into s'_q while s_p remains uncorrupted, "
-        "the resulting faulty signature s' satisfies s' ≡ s (mod p) and s' ≢ s (mod q). Consequently, gcd(s − s′, n) = p. Conversely, if s_p is faulted, the greatest common divisor yields q. "
-        "Thus, gcd(s − s′, n) ∈ {p, q}, revealing a nontrivial prime factor of n = p · q from a single faulty signature. Defending against CRT fault attacks requires separate countermeasures: "
-        "specifically, post-computation signature verification—where the signer verifies the recovered representative m' = (s^e mod n) against the correct EMSA-PSS encoded message representative "
-        "m = OS2IP(EM) and confirms EMSA-PSS encoding consistency before releasing s—or redundant fault-detection circuitry."
+        "message representative produced by EMSA-PSS-ENCODE(M) (RFC 8017 Section 8.1 / 9.1 [2]). The correct signature s satisfies s^e ≡ m (mod n). "
+        "In the two-signature formulation (Boneh et al. [7]), if an induced hardware fault corrupts s_q into s'_q while s_p remains uncorrupted, the faulty signature s' satisfies "
+        "s' ≡ s (mod p) and s' ≢ s (mod q), yielding gcd(s − s′, n) = p. Conversely, if s_p is corrupted, gcd(s − s′, n) = q. Thus, gcd(s − s′, n) ∈ {p, q}. "
+        "Alternatively, under the single-signature formulation with a known message representative m = OS2IP(EM), a single faulty signature reveals gcd((s')^e − m, n) ∈ {p, q}. "
+        "This single-signature attack assumes the adversary knows m; while deterministic schemes expose m directly from the hash, randomized RSA-PSS incorporates a random salt that obscures m "
+        "from external observers, though internal verification circuits retain full access. Defending against CRT fault attacks requires separate countermeasures from blinding: "
+        "specifically, post-computation signature verification—where the signer verifies the recovered representative m' = (s^e mod n) against the EMSA-PSS representative m = OS2IP(EM) "
+        "and validates EMSA-PSS encoding consistency before releasing s—or redundant fault-detection circuitry."
     )
 
     # -------------------------------------------------------------
     # SECTION 4: PROPOSED SYSTEM DESIGN AND IMPLEMENTATION
     # -------------------------------------------------------------
     add_h1("4. Proposed System Design and Implementation")
-    p = add_p()
+    p = add_p(space_before=0, space_after=0.2, line_spacing=1.0)
     p.add_run(
         "We design and evaluate an educational, off-chain architecture: Using RSA-PSS Digital Signatures to Authenticate Off-Chain Withdrawal Requests in Cryptocurrency Exchanges. "
         "Important Technical Boundary: The proposed educational architecture operates strictly off-chain within an internal authorization boundary to authenticate withdrawal requests "
@@ -443,7 +454,7 @@ def generate_report():
     )
 
     add_h2("4.1 Architecture and Component Decomposition")
-    p = add_p()
+    p = add_p(space_before=0, space_after=0.2, line_spacing=1.0)
     p.add_run(
         "As illustrated in Figure 2, the authentication pipeline decouples request origination from on-chain broadcast across four components:\n"
         "1. Withdrawal Service (Client/Frontend): Formats the withdrawal request: blockchain network, recipient address, withdrawal amount (in exact integer atomic units, e.g., wei), a UUIDv4 nonce, and a UNIX epoch timestamp.\n"
@@ -455,25 +466,26 @@ def generate_report():
     # Figure 2: Architecture Diagram
     arch_img = FIG_DIR / "withdrawal_architecture.png"
     if arch_img.exists():
-        p_img = add_p(space_before=0.8, space_after=0.4, align=WD_ALIGN_PARAGRAPH.CENTER)
+        p_img = add_p(space_before=0.4, space_after=0.2, align=WD_ALIGN_PARAGRAPH.CENTER)
         p_img.paragraph_format.keep_with_next = True
         r_img = p_img.add_run()
-        r_img.add_picture(str(arch_img), width=Inches(3.30))
-        p_cap = add_p(space_before=0.4, space_after=1.2, align=WD_ALIGN_PARAGRAPH.CENTER)
+        r_img.add_picture(str(arch_img), width=Inches(2.80))
+        p_cap = add_p(space_before=0.2, space_after=0.6, align=WD_ALIGN_PARAGRAPH.CENTER)
         p_cap.paragraph_format.keep_with_next = True
         r_cap = p_cap.add_run("Figure 2. Proposed off-chain cryptocurrency withdrawal authentication architecture using RSA-PSS.")
         r_cap.font.size = Pt(7.8)
         r_cap.italic = True
 
-    # Move Section 4.2 and Algorithm 1 together to Page 4
-    doc.add_page_break()
     add_h2("4.2 Deterministic JSON Serialization and Pipeline Algorithm")
     p = add_p(space_before=0, space_after=0.2, line_spacing=1.0)
     p.add_run(
         "Cryptographic signature verification fails if distributed microservices serialize JSON keys or whitespace inconsistently. "
         "Our system implements deterministic JSON serialization (sorting dictionary keys lexicographically, eliminating whitespace, and encoding to UTF-8). "
         "Note: While inspired by canonical formatting, this custom serialization does not implement full RFC 8785 (which requires ECMAScript number formatting and UTF-16 code unit ordering); "
-        "it provides deterministic byte-level consistency for the defined data schema. Algorithm 1 details the complete lifecycle."
+        "it provides deterministic byte-level consistency for the defined data schema. "
+        "Per RFC 8017 Section 9.1, EMSA-PSS encoding specifies emBits = modBits − 1 to ensure that the encoded message representative m = OS2IP(EM) satisfies m < n. "
+        "For a 2048-bit modulus (modBits = 2048), emBits = 2047 bits and emLen = ceil(emBits / 8) = 256 bytes, with salt length constrained by sLen <= emLen − hLen − 2 "
+        "(for SHA-256 hLen = 32, sLen <= 222 bytes; our pipeline deploys sLen = 32 bytes). Algorithm 1 details the complete lifecycle."
     )
 
     # Algorithm 1 Box (Kept intact with cantSplit and keep_together)
@@ -495,7 +507,7 @@ def generate_report():
         "Input:  Request R = {id, net, addr, amt_atomic, nonce, ts}, Private Key SK_rsa, Public Key PK_rsa\n"
         "Output: Decision ∈ {ACCEPT, REJECT_SIG, REJECT_REPLAY, REJECT_EXPIRED}\n"
         "1:  M_canon ← DeterministicJSON(R)                      // Lexicographical keys, compact separators, UTF-8\n"
-        "2:  EM ← EMSA-PSS-ENCODE(M_canon, emBits=2047, sLen=32) // RFC 8017 PSS encoding\n"
+        "2:  EM ← EMSA-PSS-ENCODE(M_canon, emBits=modBits−1, sLen=32) // RFC 8017 PSS encoding\n"
         "3:  σ ← RSASP1(SK_rsa, OS2IP(EM))                       // Signature generation\n"
         "4:  // Gateway Verification Phase\n"
         "5:  valid_sig ← RSASSA-PSS-Verify(PK_rsa, M_canon, σ, SHA-256, sLen=32)\n"
@@ -511,7 +523,7 @@ def generate_report():
     p = add_p(space_before=0, space_after=0.2, line_spacing=1.0)
     p.add_run(
         "To maintain academic defensibility, the prototype implementation scope must be clearly delineated from production requirements: "
-        "(1) Stateful Replay Prevention: The prototype stores processed nonces in an in-memory Python set, whereas production systems require an ACID-compliant, distributed datastore (e.g., Redis cluster or SQL database with TTL expiry) to prevent replays across horizontal microservice restarts. "
+        "(1) Stateful Replay Prevention: The prototype verifies and stores nonces in an in-memory Python set. While appropriate for an educational prototype, an in-memory set is not sufficient for distributed production replay prevention. Under concurrent requests, nonce verification and consumption must be strictly atomic (e.g., via Redis SETNX or SQL transactional INSERT with unique constraints) to avoid time-of-check-to-time-of-use (TOCTOU) race conditions, backed by a persistent datastore with TTL expiry that persists across horizontal microservice restarts. "
         "(2) Address and Validation Logic: Address checking is a prototype-level format sanity check (verifying 0x hex prefix and length), whereas production gateways require full checksum validation (EIP-55 for Ethereum, Bech32/Bech32m for Bitcoin) alongside business-tier balance checks, withdrawal thresholds, and AML screening. "
         "(3) Serialization Scope: The payload serializer applies deterministic key sorting and compact UTF-8 encoding; it does not implement full RFC 8785 (JCS) compliance. "
         "(4) Key Lifecycle and Trust: The verifier operates on pre-provisioned trusted public keys without a complete PKI, automated certificate path validation, revocation (CRLs/OCSP), or automated key rotation. "
@@ -599,7 +611,7 @@ def generate_report():
             cell = tbl_bench.cell(i+1, j)
             if i % 2 == 1:
                 set_cell_background(cell, "F9FAFB")
-            set_cell_margins(cell, top=4, bottom=4, left=12, right=12)
+            set_cell_margins(cell, top=2.5, bottom=2.5, left=10, right=10)
             p_c = cell.paragraphs[0]
             p_c.alignment = WD_ALIGN_PARAGRAPH.CENTER
             p_c.paragraph_format.space_before = Pt(0)
@@ -613,7 +625,7 @@ def generate_report():
         p_img = add_p(space_before=0.4, space_after=0.2, align=WD_ALIGN_PARAGRAPH.CENTER)
         p_img.paragraph_format.keep_with_next = True
         r_img = p_img.add_run()
-        r_img.add_picture(str(bench_img), width=Inches(2.95))
+        r_img.add_picture(str(bench_img), width=Inches(2.65))
         p_cap = add_p(space_before=0.2, space_after=0.5, align=WD_ALIGN_PARAGRAPH.CENTER)
         p_cap.paragraph_format.keep_with_next = True
         r_cap = p_cap.add_run("Figure 3. Empirical median latency comparison for RSA and ECDSA key generation, signing, and verification.")
@@ -624,11 +636,11 @@ def generate_report():
     p.add_run(
         "The empirical measurements demonstrate three decisive performance characteristics:\n"
         f"1. RSA Asymmetric Cost Structure: RSA displays a pronounced internal asymmetry: verification is {r2048['internal_asymmetry_ratio']}x (RSA-2048) to {r4096['internal_asymmetry_ratio']}x (RSA-4096) faster than its own signing operation. "
-        "Because public exponent e = 65,537 contains only two non-zero bits, verification requires just 17 multiplications, whereas private exponent d requires full modular exponentiation.\n"
+        "Because public exponent e = 65,537 = 2¹⁶ + 1 contains only two non-zero bits (10000000000000001₂), straightforward square-and-multiply exponentiation executes in 16 squarings and 1 multiplication (17 operations total), whereas private exponent d requires full modular exponentiation.\n"
         f"2. Head-to-Head Comparison with ECDSA: Comparing equivalent 128-bit classical security levels (RSA-3072 vs. ECDSA-secp256k1), ECDSA signing is {ratio_sign_ec}x faster than RSA signing ({ecdsa['sign_median_ms']} ms vs {r3072['sign_median_ms']} ms), "
         f"and ECDSA key generation is over {ratio_kg_ec}x faster ({ecdsa['keygen_median_ms']} ms vs {r3072['keygen_median_ms']} ms). Conversely, RSA-3072 signature verification ({r3072['verify_median_ms']} ms) is {ratio_3072_ec}x faster than ECDSA verification ({ecdsa['verify_median_ms']} ms). "
         f"While RSA-2048 verification ({r2048['verify_median_ms']} ms) is {ratio_2048_ec}x faster and RSA-4096 ({r4096['verify_median_ms']} ms) is {ratio_4096_ec}x faster than ECDSA, these represent 112-bit and 152-bit security levels rather than equivalent-strength comparisons. "
-        "Measured ECDSA DER signatures averaged 71 bytes (ranging between 70–72 bytes in practice due to ASN.1 encoding). "
+        "The recorded ECDSA DER signature sample was 71 bytes, with DER-encoded signatures generally varying between 70 and 72 bytes due to variable-length ASN.1 INTEGER encoding of r and s. "
         "These performance ratios are specific to the measured Python 3.15 / OpenSSL 4.0.3 execution environment on the AMD Ryzen 5 7520U processor; relative performance may vary across different CPU instruction sets (such as AVX-512) and compiled cryptographic libraries.\n"
         f"3. Isolated Operation Latency vs Gateway Throughput: At {r3072['verify_median_ms']} ms per verification, a single CPU core can theoretically evaluate ~{int(1000/r3072_ver_ms):,d} RSA-3072 signatures per second (vs ~{int(1000/ecdsa_ver_ms):,d} for ECDSA). "
         "Crucially, these figures represent isolated cryptographic operation timings, not an end-to-end exchange gateway throughput benchmark; real-world system throughput is bounded by network I/O, database persistence, and TLS handshakes."
@@ -681,7 +693,7 @@ def generate_report():
     refs = [
         "[1] R. L. Rivest, A. Shamir, and L. Adleman, \"A method for obtaining digital signatures and public-key cryptosystems,\" Communications of the ACM, vol. 21, no. 2, pp. 120–126, Feb. 1978 (MIT/LCS/TM-82, Apr. 1977). https://doi.org/10.1145/359340.359342",
         "[2] K. Moriarty, B. Kaliski, J. Jonsson, and A. Rusch, \"PKCS #1: RSA Cryptography Specifications Version 2.2,\" RFC 8017, IETF, Nov. 2016. https://www.rfc-editor.org/rfc/rfc8017",
-        "[3] E. Rescorla, \"The Transport Layer Security (TLS) Protocol Version 1.3,\" RFC 9846, IETF, Nov. 2026. https://www.rfc-editor.org/rfc/rfc9846",
+        "[3] E. Rescorla, \"The Transport Layer Security (TLS) Protocol Version 1.3,\" RFC 9846, IETF, July 2026. https://www.rfc-editor.org/rfc/rfc9846",
         "[4] National Institute of Standards and Technology (NIST), \"Digital Signature Standard (DSS),\" Federal Information Processing Standards Publication (FIPS) 186-5, Feb. 2023. https://doi.org/10.6028/NIST.FIPS.186-5",
         "[5] E. Barker, L. Chen, A. Roginsky, A. Vassilev, and R. Davis, \"Recommendation for Pair-Wise Key-Establishment Schemes Using Integer Factorization Cryptography,\" NIST Special Publication (SP) 800-56B Rev. 2, Mar. 2019. https://doi.org/10.6028/NIST.SP.800-56Br2",
         "[6] E. Barker, \"Recommendation for Key Management: Part 1 – General,\" NIST Special Publication (SP) 800-57 Part 1 Rev. 5, May 2020. https://doi.org/10.6028/NIST.SP.800-57pt1r5",

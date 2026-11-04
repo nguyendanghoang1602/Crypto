@@ -29,9 +29,9 @@ This document catalogs the primary technical standards, specifications, and foun
 - **Author:** Eric Rescorla
 - **Publishing Organization:** Internet Engineering Task Force (IETF)
 - **Series & Number:** Request for Comments (RFC) 9846 (Standards Track; supersedes RFC 8446)
-- **Publication Date:** November 2026
+- **Publication Date:** July 2026
 - **Official URL:** https://www.rfc-editor.org/rfc/rfc9846
-- **Complementary Standard:** RFC 9963 ("Legacy RSASSA-PKCS1-v1_5 Algorithms for TLS 1.3 Client Authentication")
+- **Complementary Standards:** RFC 9963 ("Legacy RSASSA-PKCS1-v1_5 Code Points for TLS 1.3", April 2026) and RFC 10024 ("Post-Quantum Traditional (PQ/T) Hybrid Key Agreement Mechanisms for TLS 1.3", August 2026)
 - **Usage in Report:** Referenced in Sections 1, 2.3, 4.3, and 6 to establish that TLS 1.3 removed static RSA key exchange in favor of ephemeral Diffie-Hellman ((EC)DHE) and post-quantum hybrid KEMs. Establishes that RSA's modern TLS 1.3 role is strictly endpoint authentication, where RSA-PSS is required for server `CertificateVerify` messages, with RFC 9963 providing a restricted legacy exception for client certificate authentication.
 
 ---
@@ -42,7 +42,7 @@ This document catalogs the primary technical standards, specifications, and foun
 - **Series & Number:** Federal Information Processing Standards Publication (FIPS) 186-5
 - **Publication Date:** February 2023
 - **DOI / URL:** https://doi.org/10.6028/NIST.FIPS.186-5
-- **Usage in Report:** Cited in Section 2.2 to document federal approval of the RSA-PSS signature scheme and its normative requirements regarding hash functions and salt generation parameters.
+- **Usage in Report:** Cited in Section 2.2 to document federal approval of the RSA-PSS signature scheme and its normative requirements regarding hash functions and salt generation parameters. Crucially cited for Section 5.1 ("Key Pair Usage"), which strictly mandates cryptographic key separation: an RSA key pair designated for digital signatures shall not be used for key establishment or encryption (such as RSA-OAEP).
 
 ---
 
