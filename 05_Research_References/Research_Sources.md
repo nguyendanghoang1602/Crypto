@@ -20,7 +20,7 @@ This document catalogs the 17 primary technical standards, specifications, and f
 - **Series & Number:** Request for Comments (RFC) 8017 (Informational)
 - **Publication Date:** November 2016
 - **Official URL:** https://www.rfc-editor.org/rfc/rfc8017
-- **Usage in Report:** Definitive technical specification for RSA key representations, cryptographic primitives (`RSASP1`, `RSAVP1`, `OS2IP`, `I2OSP`), RSA-OAEP encryption key transport constraints ($mLen \le k - 2hLen - 2$; 190 bytes for RSA-2048 with SHA-256), and RSA-PSS digital signature encoding (`EMSA-PSS-ENCODE`, `EMSA-PSS-VERIFY`). Documents that RSA-OAEP achieves IND-CCA2 security in the Random Oracle Model (Bellare & Rogaway 1994 [17], Shoup 2001 [15], Fujisaki et al. 2001 [16]) under the standard RSA one-wayness assumption (via equivalence to partial-domain one-wayness, though the concrete reduction is non-tight), whereas RSA-PSS achieves a tight EUF-CMA reduction in the ROM. Crucially, establishes the complete signing and verification sequences, emphasizing that modular exponentiation (`RSAVP1`, computing $s^e \bmod n$) alone does not establish signature validity without full `EMSA-PSS-VERIFY` salt unmasking and padding verification.
+- **Usage in Report:** Definitive technical specification for RSA key representations, cryptographic primitives (`RSASP1`, `RSAVP1`, `OS2IP`, `I2OSP`), RSA-OAEP encryption key transport constraints ($mLen \le k - 2hLen - 2$; 190 bytes for RSA-2048 with SHA-256), and RSA-PSS digital signature encoding (`EMSA-PSS-ENCODE`, `EMSA-PSS-VERIFY`). As an IETF Informational document, RFC 8017 specifies the concrete engineering implementation of these schemes; the underlying theoretical security proofs are established in the academic research literature (with RSA-OAEP proven IND-CCA2 in the Random Oracle Model under the standard RSA one-wayness assumption by Fujisaki et al. [16] following Shoup's analysis [15] of Bellare-Rogaway [17], while RSA-PSS achieves a tight EUF-CMA reduction in the ROM [3], [4]). Crucially, establishes the complete signing and verification sequences, emphasizing that modular exponentiation (`RSAVP1`, computing $s^e \bmod n$) alone does not establish signature validity without full `EMSA-PSS-VERIFY` salt unmasking and padding verification.
 
 ---
 
@@ -155,8 +155,8 @@ This document catalogs the 17 primary technical standards, specifications, and f
 - **Document Title:** OAEP Reconsidered
 - **Author:** Victor Shoup
 - **Publication Venue:** *Journal of Cryptology*, vol. 15, no. 4, pp. 223–249, September 2002. (Extended abstract in *Advances in Cryptology – CRYPTO 2001*, Lecture Notes in Computer Science (LNCS), vol. 2139, pp. 239–259, Springer, 2001).
-- **DOI / URL:** https://doi.org/10.1007/s00145-002-0109-1
-- **Usage in Report:** Cited in Section 2.2 to document the foundational theoretical audit of OAEP. Shoup demonstrated that the original Bellare–Rogaway (1994) IND-CCA2 security proof could not be established for arbitrary trapdoor permutations via standard black-box reductions, identified the critical relevance of partial-domain one-wayness to obtaining stronger chosen-ciphertext security, and proposed the provably secure variant OAEP+.
+- **DOI / URL:** https://doi.org/10.1007/s00145-002-0133-9
+- **Usage in Report:** Cited in Section 2.2 to document the foundational theoretical audit of OAEP. Shoup demonstrated that the claimed general IND-CCA2 security proof could not be established for arbitrary trapdoor permutations via standard black-box reductions under standard one-wayness (exposing a gap in the original general reduction), and proposed the provably secure variant OAEP+ to achieve IND-CCA2 security for arbitrary permutations.
 
 ---
 
@@ -165,7 +165,7 @@ This document catalogs the 17 primary technical standards, specifications, and f
 - **Authors:** Eiichiro Fujisaki, Tatsuaki Okamoto, David Pointcheval, and Jacques Stern
 - **Publication Venue:** *Journal of Cryptology*, vol. 17, no. 2, pp. 81–104, March 2004. (Extended abstract in *Advances in Cryptology – CRYPTO 2001*, Lecture Notes in Computer Science (LNCS), vol. 2139, pp. 260–274, Springer, 2001).
 - **DOI / URL:** https://doi.org/10.1007/s00145-002-0204-y
-- **Usage in Report:** Cited in Section 2.2 as the definitive proof establishing that RSA-OAEP achieves IND-CCA2 security in the Random Oracle Model under the standard RSA one-wayness assumption. The authors proved that for the specific algebraic structure of the RSA permutation, partial-domain one-wayness is equivalent to full-domain one-wayness, confirming the cryptographic soundness of RSA-OAEP implementations (such as PKCS #1 / RFC 8017), while noting that the concrete security reduction is non-tight for practical RSA parameter lengths.
+- **Usage in Report:** Cited in Section 2.2 as the definitive proof establishing that RSA-OAEP achieves IND-CCA2 security in the Random Oracle Model under the standard RSA one-wayness assumption. Fujisaki, Okamoto, Pointcheval, and Stern introduced the concept of partial-domain one-wayness, proved that OAEP is IND-CCA2 secure if the underlying permutation is partial-domain one-way, and demonstrated that for the specific algebraic structure of the RSA permutation, partial-domain one-wayness is mathematically equivalent to full-domain one-wayness. This resolved the security gap for RSA-OAEP implementations (such as PKCS #1 / RFC 8017), while noting that the concrete security reduction is non-tight for practical RSA parameter lengths.
 
 ---
 
@@ -174,4 +174,4 @@ This document catalogs the 17 primary technical standards, specifications, and f
 - **Authors:** Mihir Bellare and Phillip Rogaway
 - **Publication Venue:** *Advances in Cryptology – EUROCRYPT '94*, Lecture Notes in Computer Science (LNCS), vol. 950, pp. 92–111, Springer-Verlag, 1995.
 - **DOI / URL:** https://doi.org/10.1007/BFb0053428
-- **Usage in Report:** Cited in Section 2.2 as the original academic formulation of Optimal Asymmetric Encryption Padding (OAEP). Bellare and Rogaway introduced OAEP and established semantic security against chosen-plaintext attacks (IND-CPA) and plaintext awareness (implying chosen-ciphertext security IND-CCA1 for general trapdoor permutations in the Random Oracle Model).
+- **Usage in Report:** Cited in Section 2.2 as the original academic formulation of Optimal Asymmetric Encryption Padding (OAEP). Bellare and Rogaway introduced OAEP and established semantic security against chosen-plaintext attacks (IND-CPA) and plaintext awareness (implying chosen-ciphertext security IND-CCA1 for general trapdoor permutations in the Random Oracle Model), without establishing general IND-CCA2 security under standard one-wayness.

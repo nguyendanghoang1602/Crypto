@@ -209,24 +209,30 @@ In November 2026, a final academic accuracy and documentation consistency review
 
 ### 7.1 Summary of Targeted Corrections
 
-1. **Bellare & Rogaway (1994) Dedicated Citation ([17]):**
+1. **Bellare & Rogaway (1994) Dedicated Citation ([17]) & Theoretical Scope:**
    - *Rationale:* Section 2.2 delineates the historical progression of OAEP proofs: Bellare & Rogaway (1994), Shoup (2001), and Fujisaki et al. (2001). To ensure academic rigor and complete bibliographic traceability, a dedicated entry for Bellare & Rogaway was added as reference `[17]`.
    - *Citation Details:* M. Bellare and P. Rogaway, "Optimal Asymmetric Encryption," in *Advances in Cryptology – EUROCRYPT '94*, Lecture Notes in Computer Science, vol. 950, pp. 92–111, Springer, 1995. DOI: `10.1007/BFb0053428`.
-   - *Theoretical Scope:* Accurately attributed semantic security against chosen-plaintext attacks (IND-CPA) and plaintext awareness (implying IND-CCA1 for general trapdoor permutations in the Random Oracle Model), without overstating general IND-CCA2 security.
+   - *Theoretical Scope:* Accurately attributed semantic security against chosen-plaintext attacks (IND-CPA) and plaintext awareness (implying chosen-ciphertext security IND-CCA1 for general trapdoor permutations in the Random Oracle Model), avoiding any unsupported claims of general IND-CCA2 security under standard one-wayness.
 
-2. **Shoup (2001) Conference Proceedings Metadata ([15]):**
-   - *Correction:* In reference [15], corrected the conference proceedings page range in *Advances in Cryptology – CRYPTO 2001*, Lecture Notes in Computer Science (LNCS), vol. 2139, from `pp. 133–159` to the authoritative publisher page range **`pp. 239–259`**.
-   - *Full Citation:* V. Shoup, "OAEP Reconsidered," *Journal of Cryptology*, vol. 15, no. 4, pp. 223–249, Sep. 2002 (extended abstract in *Advances in Cryptology – CRYPTO 2001*, LNCS 2139, pp. 239–259, Springer). DOI: `10.1007/s00145-002-0109-1`.
+2. **Shoup (2001/2002) DOI & Conference Proceedings Metadata ([15]):**
+   - *Publisher-Verified DOI:* Independently audited against Springer Nature registry metadata and verified that the official DOI for Victor Shoup's *OAEP Reconsidered* in the *Journal of Cryptology* (vol. 15, no. 4, pp. 223–249, 2002) is **`10.1007/s00145-002-0133-9`** (replacing the previous unverified suffix `...0109-1`).
+   - *Conference Proceedings:* Corrected the conference proceedings page range in *Advances in Cryptology – CRYPTO 2001*, Lecture Notes in Computer Science (LNCS), vol. 2139, from `pp. 133–159` to the authoritative publisher page range **`pp. 239–259`**.
+   - *Full Citation:* V. Shoup, "OAEP Reconsidered," *Journal of Cryptology*, vol. 15, no. 4, pp. 223–249, Sep. 2002 (extended abstract in *Advances in Cryptology – CRYPTO 2001*, LNCS 2139, pp. 239–259, Springer). DOI: `10.1007/s00145-002-0133-9`.
+   - *Theoretical Attribution:* Correctly attributed Shoup's result: demonstrated that the claimed general IND-CCA2 security proof cannot be established for arbitrary trapdoor permutations via standard black-box reductions under standard (full-domain) one-wayness, and proposed the provably secure variant OAEP+.
 
-3. **Fujisaki et al. (2001/2004) DOI Correction ([16]):**
-   - *Correction:* In reference [16], corrected the official Springer Digital Object Identifier (DOI) from `10.1007/s00145-002-0204-3` to **`10.1007/s00145-002-0204-y`** (ending in `-y`).
+3. **Fujisaki et al. (2001/2004) DOI & Partial-Domain One-Wayness Attribution ([16]):**
+   - *DOI Correction:* In reference [16], verified and retained the official Springer Digital Object Identifier (DOI) **`10.1007/s00145-002-0204-y`** (ending in `-y`).
    - *Full Citation:* E. Fujisaki, T. Okamoto, D. Pointcheval, and J. Stern, "RSA-OAEP is Secure under the RSA Assumption," *Journal of Cryptology*, vol. 17, no. 2, pp. 81–104, Mar. 2004 (extended abstract in *Advances in Cryptology – CRYPTO 2001*, LNCS 2139, pp. 260–274, Springer). DOI: `10.1007/s00145-002-0204-y`.
+   - *Theoretical Attribution:* Correctly attributed the introduction and establishment of **partial-domain one-wayness** to Fujisaki, Okamoto, Pointcheval, and Stern (2001). They showed that OAEP is IND-CCA2 secure in the ROM if the permutation is partial-domain one-way, and proved that for the specific algebraic structure of the RSA permutation, partial-domain one-wayness is mathematically equivalent to full-domain one-wayness (the standard RSA assumption), thereby establishing IND-CCA2 security specifically for RSA-OAEP under the RSA assumption (with non-tight concrete reduction).
 
-4. **Reference Count & Documentation Harmonization:**
+4. **Reference [2] (RFC 8017) Attribution Demarcation:**
+   - *Scope:* Explicitly clarified that IETF RFC 8017 is an Informational document defining concrete engineering formats and encoding algorithms (such as RSAES-OAEP and RSASSA-PSS); the underlying mathematical security reductions belong to academic peer-reviewed literature, avoiding any misattribution of formal security proofs to RFC 8017 itself.
+
+5. **Reference Count & Documentation Harmonization:**
    - *Harmonization:* Synchronized all active references to reflect exactly **17 primary references** [1]–[17] across `RSA_Real_World_Applications_Report.docx`, `02_Source_Code/build_report_doc.py`, `05_Research_References/Research_Sources.md`, `README.md`, and `FINAL_REVIEW_NOTES.md`.
    - *Lecture Course Scope:* Reaffirmed that the verified academic lecture syllabus encompasses **Sessions 1–7**. Any earlier references to an 8th session in historical draft logs are explicitly noted as superseded.
 
-5. **Word Document Pagination & Margin Safety Verification:**
+6. **Word Document Pagination & Margin Safety Verification:**
    - *Rendering Engine:* Kingsoft WPS Office (Version 12.0, Build 12.1.0.29162; active registered COM provider for `Word.Application`).
-   - *Rendered Pages:* **Strictly 5 A4 pages** (`doc.ComputeStatistics(2) == 5`; word count: 4,747 words).
+   - *Rendered Pages:* **Strictly 5 A4 pages** (`doc.ComputeStatistics(2) == 5`; word count: 4,758 words).
    - *Vertical Clearance:* Fine-tuned Figure 3 width (2.25 in) and spacing in Section 6/7. The final paragraph (Reference [17]) concludes at vertical position 773.25 pt on Page 5, providing 26.75 pt of safety margin clearance before the 800 pt printable page limit.
