@@ -277,14 +277,16 @@ def generate_report():
     p.add_run(
         "RSA supports two distinct operational primitives designed for contrasting security goals:\n"
         "• Asymmetric Encryption (Confidentiality): The sender encrypts plaintext using recipient public key (e, n); only private key d can decrypt. "
-        "Modern systems employ RSA-OAEP (RFC 8017 Section 7.1 [2]). In the Random Oracle Model (ROM), Bellare and Rogaway (1994) originally established IND-CCA1 security for general trapdoor permutations, while Shoup (2001) and Fujisaki et al. (2001) proved IND-CCA2 security under RSA partial-domain one-wayness; however, the concrete security reduction is not tight for practical parameters. "
+        "Modern systems employ RSA-OAEP (RFC 8017 Section 7.1 [2]). In the Random Oracle Model (ROM), Bellare and Rogaway (1994) introduced OAEP and established the original IND-CCA1 security result for general trapdoor permutations. "
+        "Subsequently, Shoup (2001) [15] demonstrated that the general IND-CCA2 proof could not be established for arbitrary trapdoor permutations via standard black-box reductions, and identified the significance of partial-domain one-wayness (proposing OAEP+). "
+        "Fujisaki, Okamoto, Pointcheval, and Stern (2001) [16] resolved the security of RSA-OAEP, proving IND-CCA2 security in the ROM under the standard RSA one-wayness assumption by demonstrating that partial-domain one-wayness is equivalent to full-domain one-wayness for the RSA permutation, though the concrete reduction is non-tight for practical key sizes. "
         "Because RSAES-OAEP payload size is bounded by mLen <= k - 2hLen - 2 (RFC 8017 Section 7.1.1; 190 bytes for RSA-2048 with SHA-256), "
         "industrial architectures deploy it within hybrid encryption for RSA key transport—encapsulating ephemeral symmetric keys (e.g., 256-bit AES-GCM per NIST SP 800-56B Rev. 2 [5]) "
         "to secure high-throughput bulk data streaming.\n"
         "• Digital Signatures (Authenticity, Integrity, Non-Repudiation Evidence): Under RFC 8017 Section 8.1 / 9.1 and NIST FIPS 186-5 [2], [4], RSA-PSS is the state-of-the-art standard. "
-        "Signing proceeds by encoding digest M via EM = EMSA-PSS-ENCODE(M, emBits = modBits − 1), converting octets to integer m = OS2IP(EM), computing signature representative s = RSASP1(SK, m) (via d or CRT parameters), and formatting signature octets S = I2OSP(s, k). "
-        "Verification parses s = OS2IP(S), applies public modular exponentiation m = RSAVP1(PK, s) = s^e mod n, converts octets EM = I2OSP(m, emLen), and executes EMSA-PSS-VERIFY(M, EM, emBits). "
-        "Crucially, modular exponentiation (RSAVP1) alone does not establish signature validity; EMSA-PSS decoding—unmasking the randomized salt via MGF1, checking padding, and confirming hash consistency—is indispensable. "
+        "Given original message octet string M, the signing sequence computes message digest mHash = Hash(M), generates encoded message octet string EM = EMSA-PSS-ENCODE(M, emBits = modBits − 1) incorporating a randomized salt, converts octets to integer message representative m = OS2IP(EM), computes signature representative s = RSASP1(SK, m) (via private exponent d or CRT parameters), and formats signature octet string S = I2OSP(s, k). "
+        "The verifier parses integer s = OS2IP(S), applies public modular exponentiation to recover integer representative m = RSAVP1(PK, s) = s^e mod n, converts integer to octet string EM = I2OSP(m, emLen), and executes EMSA-PSS-VERIFY(M, EM, emBits). "
+        "Crucially, modular exponentiation (RSAVP1) alone does not establish signature validity; EMSA-PSS decoding—unmasking the randomized salt via MGF1, checking padding bytes, and confirming hash consistency against M—is indispensable. "
         "PSS achieves a tight security reduction to the RSA problem in the ROM (EUF-CMA). Cryptographic signatures furnish non-repudiation evidence, while full non-repudiation requires identity binding, secure custody, and operational controls.\n"
         "• Cryptographic Key Separation (NIST FIPS 186-5 Section 5.1 / SP 800-57): A vital security mandate in asymmetric cryptography is strict key separation. "
         "NIST FIPS 186-5 Section 5.1 explicitly dictates that an RSA key pair designated for digital signatures shall not be used for any other purpose, such as key establishment or encryption (RSA-OAEP). "
@@ -388,11 +390,11 @@ def generate_report():
     add_h2("3.1 Storage and Verification Trade-Offs in Blockchain Consensus Layers")
     p = add_p()
     p.add_run(
-        "A central requirement of public blockchains is minimizing ledger storage bloat and bandwidth overhead. "
-        "In Bitcoin and Ethereum, transaction fees and execution costs directly penalize excessive data footprints. "
-        "Under Bitcoin's economic model, fees are computed by multiplying transaction virtual size (vSize in vB) by the prevailing market feerate (sat/vB), "
-        "whereas Ethereum transaction execution costs are measured using gas for computational steps and calldata serialization [12], [13]. "
-        "In both networks, compact cryptographic signatures and public keys are paramount for node throughput and decentralized state validation. "
+        "A central requirement of public blockchains is minimizing ledger bloat and bandwidth overhead. "
+        "In Bitcoin and Ethereum, transaction fees and execution costs penalize excessive data footprints. "
+        "Under Bitcoin's economic model, fees equal transaction virtual size (vSize in vB) multiplied by prevailing feerate (sat/vB), "
+        "whereas Ethereum costs are measured in gas for execution steps and calldata serialization [12], [13]. "
+        "In both networks, compact signatures and public keys are paramount for throughput and decentralized state validation. "
         "To evaluate transaction overhead accurately under Bitcoin BIP 141 (Segregated Witness) [9], transaction weight is formulated as "
         "Weight = (Base Size * 3) + Total Size, and virtual size is vSize = ceil(Weight / 4). "
         "A standard 1-input, 2-output SegWit P2WPKH transaction has a baseline virtual size of ~141 vB (~210–220 serialized bytes). "
@@ -429,17 +431,18 @@ def generate_report():
         "(2) Hardware Security Module (HSM) Integration: Enterprise banking infrastructure and secure enclaves feature mature hardware support for RSA modular arithmetic. "
         "(3) Avoidance of Scalar Nonce Reuse Hazards: Standard ECDSA is fragile against nonce failure: if the signing nonce k repeats or exhibits slight bit bias, "
         "the private key is algebraically exposed. While RSA-PSS eliminates scalar nonce leakage, it does not remove all side-channel risks: "
-        "implementations must employ base blinding (randomizing the base integer with a secret factor r prior to modular exponentiation: x' = x · r^e mod n) "
-        "to mitigate timing side-channel attacks. Crucially, blinding alone does not prevent hardware fault injection such as the Bellcore attack on Chinese Remainder "
-        "Theorem (CRT) implementations [7]. In CRT-based signing, the signer computes s_p = m^(d_p) mod p and s_q = m^(d_q) mod q, where m = OS2IP(EM) is the integer "
-        "message representative produced by EMSA-PSS-ENCODE(M) (RFC 8017 Section 8.1 / 9.1 [2]). The correct signature s satisfies s^e ≡ m (mod n). "
-        "In the two-signature formulation (Boneh et al. [7]), if an induced hardware fault corrupts s_q into s'_q while s_p remains uncorrupted, the faulty signature s' satisfies "
-        "s' ≡ s (mod p) and s' ≢ s (mod q), yielding gcd(s − s′, n) = p. Conversely, if s_p is corrupted, gcd(s − s′, n) = q. Thus, gcd(s − s′, n) ∈ {p, q}. "
-        "Alternatively, under the single-fault formulation, an attacker knowing m can factor the modulus via gcd((s')^e − m, n) ∈ {p, q}. "
-        "In RSA-PSS, the randomized salt is unmasked and checked during verification (it is not a secret), but because m is randomized, an adversary cannot precompute m from message M alone without the salt; "
-        "however, once any valid signature s is observed, m is readily recovered via s^e mod n. Hence, the two-signature attack gcd(s − s', n) ∈ {p, q} remains directly applicable. "
-        "Base blinding mitigates timing side channels, NOT CRT fault injection. Defending against CRT fault attacks requires separate countermeasures: "
-        "specifically, post-computation signature verification—where the signer verifies m' = (s^e mod n) against m = OS2IP(EM) and checks EMSA-PSS consistency before releasing s—or fault-detecting co-processors."
+        "implementations must employ base blinding (randomizing the base integer with a secret factor r: x' = x · r^e mod n) to mitigate timing side channels. "
+        "Crucially, blinding alone does not prevent hardware fault injection such as the Bellcore attack on Chinese Remainder Theorem (CRT) implementations (Boneh et al. [7]). "
+        "In CRT signing, the signer computes s_p = m^(d_p) mod p and s_q = m^(d_q) mod q, where m = OS2IP(EM) is the integer message representative from EMSA-PSS-ENCODE(M) (RFC 8017 Section 8.1 / 9.1 [2]), satisfying s^e ≡ m (mod n). "
+        "Bellcore fault attacks operate under two distinct formulations:\n"
+        "• Two-Signature Formulation: Requires one correct signature s and one faulty signature s' generated from the exact same representative m = OS2IP(EM). "
+        "If a fault corrupts s_q into s'_q while s_p is uncorrupted, s' satisfies s' ≡ s (mod p) and s' ≢ s (mod q), yielding gcd(s − s', n) = p (or q if s_p is faulted); thus gcd(s − s', n) ∈ {p, q}. "
+        "Crucially, because RSA-PSS randomizes the salt, independent signing runs on message M produce differing encodings (EM₁ ≠ EM₂) and representatives (m₁ ≠ m₂); two signatures with differing salts do not satisfy this condition.\n"
+        "• Single-Fault Formulation: An attacker knowing the exact representative m of faulty signature s' factors n via gcd((s')^e − m, n) ∈ {p, q}. "
+        "This assumes knowledge of the exact encoded representative m of that specific execution, not merely application message M. "
+        "While any valid signature reveals its own representative via s^e mod n, it does not reveal the representative of an independently salted faulty execution.\n"
+        "Countermeasures must remain strictly differentiated: (i) Base blinding mitigates timing side channels, NOT CRT faults; "
+        "(ii) CRT fault defense requires post-computation verification—verifying m_check = (s^e mod n) against m = OS2IP(EM) and checking EMSA-PSS consistency before releasing s—or (iii) redundant fault-detection hardware."
     )
 
     # -------------------------------------------------------------
@@ -470,14 +473,15 @@ def generate_report():
         p_img = add_p(space_before=0.4, space_after=0.2, align=WD_ALIGN_PARAGRAPH.CENTER)
         p_img.paragraph_format.keep_with_next = True
         r_img = p_img.add_run()
-        r_img.add_picture(str(arch_img), width=Inches(2.80))
+        r_img.add_picture(str(arch_img), width=Inches(1.85))
         p_cap = add_p(space_before=0.2, space_after=0.6, align=WD_ALIGN_PARAGRAPH.CENTER)
         p_cap.paragraph_format.keep_with_next = True
         r_cap = p_cap.add_run("Figure 2. Proposed off-chain cryptocurrency withdrawal authentication architecture using RSA-PSS.")
         r_cap.font.size = Pt(7.8)
         r_cap.italic = True
 
-    add_h2("4.2 Deterministic JSON Serialization and Pipeline Algorithm")
+    p_h42 = add_h2("4.2 Deterministic JSON Serialization and Pipeline Algorithm")
+    p_h42.paragraph_format.page_break_before = True
     p = add_p(space_before=0, space_after=0.2, line_spacing=1.0)
     p.add_run(
         "Cryptographic signature verification fails if distributed microservices serialize JSON keys or whitespace inconsistently. "
@@ -528,7 +532,7 @@ def generate_report():
         "(2) Address and Validation Logic: Address checking is a prototype-level format sanity check (verifying 0x hex prefix and length), whereas production gateways require full checksum validation (EIP-55 for Ethereum, Bech32/Bech32m for Bitcoin) alongside business-tier balance checks, withdrawal thresholds, and AML screening. "
         "(3) Serialization Scope: The payload serializer applies deterministic key sorting and compact UTF-8 encoding; it does not implement full RFC 8785 (JCS) compliance. "
         "(4) Key Lifecycle and Trust: The verifier operates on pre-provisioned trusted public keys without a complete PKI, automated certificate path validation, revocation (CRLs/OCSP), or automated key rotation. "
-        "(5) Key Custody: Signing private keys reside in process memory for educational demonstration, whereas production systems deploy appropriately validated HSMs or secure hardware (e.g., FIPS 140-2/3 validated HSMs, cloud HSM services, or secure enclaves) based on the operational threat model, regulatory environment, and institutional key-management policies."
+        "(5) Key Custody: Signing private keys reside in process memory for educational demonstration, whereas production gateways deploy appropriately validated HSMs or secure hardware—preferring active FIPS 140-3 validated modules for new procurements, while recognizing legacy FIPS 140-2 modules (transitioned to the NIST CMVP Historical List in September 2026) for existing systems—based on the operational threat model, regulatory environment, and institutional key-management policies."
     )
 
     # -------------------------------------------------------------
@@ -705,7 +709,9 @@ def generate_report():
         "[11] S. Josefsson and I. Liusvaara, \"Edwards-Curve Digital Signature Algorithm (EdDSA),\" RFC 8032, IETF, Jan. 2017. https://www.rfc-editor.org/rfc/rfc8032",
         "[12] Bitcoin Core Developers, \"Bitcoin Developer Guide: Transactions,\" Bitcoin Project, n.d. [Online; accessed 2026]. https://developer.bitcoin.org/devguide/transactions.html",
         "[13] Ethereum Foundation, \"Ethereum Developer Documentation: Transactions and Cryptographic Signatures,\" n.d. [Online; accessed 2026]. https://ethereum.org/en/developers/docs/transactions/",
-        "[14] Google Security Research, \"Project Wycheproof: Cryptographic Test Vectors for Asymmetric Algorithms,\" GitHub repository (v0.9 snapshot), n.d. [Online; accessed 2026]. https://github.com/google/wycheproof"
+        "[14] Google Security Research, \"Project Wycheproof: Cryptographic Test Vectors for Asymmetric Algorithms,\" GitHub repository (v0.9 snapshot), n.d. [Online; accessed 2026]. https://github.com/google/wycheproof",
+        "[15] V. Shoup, \"OAEP Reconsidered,\" Journal of Cryptology, vol. 15, no. 4, pp. 223–249, Sep. 2002 (extended abstract in CRYPTO 2001, LNCS 2139, pp. 133–159, Springer). https://doi.org/10.1007/s00145-002-0109-1",
+        "[16] E. Fujisaki, T. Okamoto, D. Pointcheval, and J. Stern, \"RSA-OAEP is Secure under the RSA Assumption,\" Journal of Cryptology, vol. 17, no. 2, pp. 81–104, Mar. 2004 (extended abstract in CRYPTO 2001, LNCS 2139, pp. 260–274, Springer). https://doi.org/10.1007/s00145-002-0204-3"
     ]
 
     for ref in refs:

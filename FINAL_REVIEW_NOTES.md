@@ -162,3 +162,41 @@ During the final technical polishing round (November 2026), six targeted cryptog
    - *Rendering Engine:* Kingsoft WPS Office 12.1.0.29162 (active COM provider for `Word.Application`).
    - *Status:* **Exactly 5 A4 pages** (verified via `doc.ComputeStatistics(2) == 5`).
    - *Layout Integrity:* Algorithm 1 is unified on Page 4 (`w:cantSplit`, `keep_together`). Table 1 is unified on Page 2. Table 2 is unified on Page 4. Figure 1 on Page 2, Figure 2 on Page 3, Figure 3 on Page 4. All 14 references [1]–[14] conclude cleanly on Page 5.
+
+
+---
+
+## 6. Final Correction Round — Cryptographic Technical Audit & Synchronized Release
+
+In November 2026, an independent cryptographic audit cross-checked the repository against primary academic literature, official NIST standards, and rendering layout constraints. The following five narrowly scoped technical corrections were implemented:
+
+### 6.1 Summary of Targeted Corrections
+
+1. **RSA-OAEP Security Proof Historical & Theoretical Attribution:**
+   - *Correction:* Delineated the three foundational milestones in the security analysis of OAEP in Section 2.2:
+     - **Bellare & Rogaway (1994):** Introduced OAEP and established the original IND-CCA1 security result for general trapdoor permutations in the Random Oracle Model (ROM).
+     - **Shoup (2001) [15]:** Demonstrated that the general IND-CCA2 security proof claim could not be established for arbitrary trapdoor permutations using standard black-box reductions (showing a proof gap), identified the significance of partial-domain one-wayness, and proposed the provably secure variant OAEP+.
+     - **Fujisaki, Okamoto, Pointcheval, & Stern (2001) [16]:** Proved IND-CCA2 security for RSA-OAEP under the standard RSA one-wayness assumption in the ROM by demonstrating that for the RSA permutation, partial-domain one-wayness is equivalent to full-domain one-wayness, while establishing that the concrete reduction is non-tight for practical RSA parameters.
+   - *Bibliography:* Added complete primary citations for Shoup (*Journal of Cryptology*, 2002 / CRYPTO 2001) [15] and Fujisaki et al. (*Journal of Cryptology*, 2004 / CRYPTO 2001) [16] in Section 7, `Research_Sources.md`, and `README.md`.
+
+2. **Bellcore CRT Fault Attack with Randomized RSA-PSS:**
+   - *Correction:* Corrected a logical omission regarding randomized salt in Section 3.2. Because RSA-PSS incorporates a randomized salt, independent signing executions on message $M$ yield differing encodings ($EM_1 \ne EM_2$) and representatives ($m_1 \ne m_2$).
+   - *Formulations Delineated:*
+     - **Two-Signature Formulation:** $\gcd(s - s', n) \in \{p, q\}$ strictly requires that both correct signature $s$ and faulty signature $s'$ were computed from the **exact same** encoded message representative $m = \text{OS2IP}(EM)$ (identical salt and padding). Two signatures on $M$ with differing salts do NOT satisfy this condition.
+     - **Single-Fault Formulation:** $\gcd((s')^e - m, n) \in \{p, q\}$ requires knowledge of the exact representative $m$ of that specific faulty execution, which cannot be obtained merely from $M$ or a separate valid signature with a differing salt.
+   - *Countermeasure Delineation:* Delineated that base blinding ($x' = x \cdot r^e \bmod n$) mitigates timing side-channel attacks, NOT CRT fault injection; defending against CRT fault injection requires post-computation signature verification or redundant dual-rail fault-detection hardware.
+
+3. **RSA-PSS Input Notation Alignment:**
+   - *Correction:* Followed RFC 8017 Section 8.1 / 9.1 notation in Section 2.2: original message octet string $M$, message digest $mHash = \text{Hash}(M)$, encoded message octet string $EM = \text{EMSA-PSS-ENCODE}(M, \text{emBits} = \text{modBits} - 1)$, integer message representative $m = \text{OS2IP}(EM)$, signature representative $s = \text{RSASP1}(SK, m)$, and signature octet string $S = \text{I2OSP}(s, k)$.
+   - *Verification Sequence:* Retained $s = \text{OS2IP}(S) \to m = \text{RSAVP1}(PK, s) = s^e \bmod n \to EM = \text{I2OSP}(m, \text{emLen}) \to \text{EMSA-PSS-VERIFY}(M, EM, \text{emBits})$, emphasizing that modular exponentiation alone does not establish signature validity without EMSA-PSS decoding.
+
+4. **FIPS 140-2 / FIPS 140-3 HSM Validation Status:**
+   - *Correction:* Updated Section 4.3 and `README.md` to reflect the official NIST Cryptographic Module Validation Program (CMVP) status: all FIPS 140-2 validation certificates transitioned to the CMVP Historical List upon the standard's sunset on September 22, 2026. Production systems prefer active FIPS 140-3 validated modules for new procurements, while recognizing legacy FIPS 140-2 modules for existing systems under institutional risk management.
+
+5. **University Lecture Session Verification:**
+   - *Correction:* Strictly limited verified claims to Sessions 1–7 (the core university lecture syllabus collections inspected and verified). Removed unsupported claims of an 8th session across all documentation.
+
+6. **Word Document Pagination & Layout Integrity:**
+   - *Automation Engine:* Kingsoft WPS Office (Version 12.0, Build 12.1.0.29162; active registered COM provider for `Word.Application`).
+   - *Rendered Pages:* **Exactly 5 A4 pages** (`doc.ComputeStatistics(2) == 5`).
+   - *Layout Verification:* Table 1 (Page 1), Table 2 (Page 2), Table 3 / Algorithm 1 (Page 4, `w:cantSplit`, `keep_together`), Table 4 / Table 2 Benchmarks (Page 4), Figure 1 (Page 2), Figure 2 (Page 3), Figure 3 (Page 5). All 16 references [1]–[16] conclude cleanly on Page 5 with ample bottom margin clearance.

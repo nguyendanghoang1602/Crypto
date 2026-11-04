@@ -73,7 +73,7 @@ This document catalogs the primary technical standards, specifications, and foun
 - **Authors:** Dan Boneh, Richard A. DeMillo, and Richard J. Lipton
 - **Publication Venue:** *Journal of Cryptology*, vol. 14, no. 2, pp. 101–119, 2001 (preliminary version in *Eurocrypt 1997*).
 - **DOI / URL:** https://doi.org/10.1007/s001450010016
-- **Usage in Report:** Cited in Section 3.2 to formulate the Bellcore hardware fault-injection attack on Chinese Remainder Theorem (CRT) RSA implementations. Details both the two-signature formulation ($\gcd(s - s', n) \in \{p, q\}$) when a valid signature $s$ is available, and the single-fault formulation ($\gcd((s')^e - m, n) \in \{p, q\}$) when message representative $m = \text{OS2IP}(EM)$ is known. Clarifies that the PSS salt is unmasked during verification (not a secret), but because $m$ is randomized, $m$ cannot be precomputed from $M$ alone without the salt; once a valid signature $s$ is observed, $m = s^e \bmod n$ is recovered. Highlights that base blinding ($x' = x \cdot r^e \bmod n$) mitigates timing side channels, NOT CRT fault attacks, which require post-computation signature verification or fault-detection circuitry.
+- **Usage in Report:** Cited in Section 3.2 to formulate the Bellcore hardware fault-injection attack on Chinese Remainder Theorem (CRT) RSA implementations. Explicitly delineates: (1) The two-signature formulation ($\gcd(s - s', n) \in \{p, q\}$) which strictly requires that both correct signature $s$ and faulty signature $s'$ were generated from the exact same encoded message representative $m = \text{OS2IP}(EM)$ (identical salt and padding); independent RSA-PSS executions on message $M$ yield differing salts ($EM_1 \ne EM_2 \implies m_1 \ne m_2$) and do NOT satisfy this condition; (2) The single-fault formulation ($\gcd((s')^e - m, n) \in \{p, q\}$) which assumes knowledge of the exact encoded representative $m$ of that specific faulty execution (which cannot be obtained merely from $M$ or a separate signature with a differing salt). Crucially differentiates countermeasures: base blinding ($x' = x \cdot r^e \bmod n$) mitigates timing side-channel attacks, NOT CRT fault injection, which requires post-computation signature verification or redundant fault-detection hardware.
 
 ---
 
@@ -147,3 +147,22 @@ This document catalogs the primary technical standards, specifications, and foun
 - **Upstream Project Notice:** The active upstream repository maintained by C2SP contains an expanded number of test vectors; the bundled version 0.9 snapshot is preserved intact in this repository (`05_Research_References/Wycheproof_Test_Vector/`) for experimental determinism and reproducibility.
 - **Official URL:** https://github.com/google/wycheproof
 - **Usage in Report:** Cited in Section 5.2 and executed in `rsa_pss_experiment.py`, validating all 108 test vectors (63 expected-valid accepted, 45 expected-invalid rejected) with 100% agreement.
+
+
+---
+
+### [15] OAEP Reconsidered
+- **Document Title:** OAEP Reconsidered
+- **Author:** Victor Shoup
+- **Publication Venue:** *Journal of Cryptology*, vol. 15, no. 4, pp. 223–249, September 2002. (Extended abstract in *Advances in Cryptology – CRYPTO 2001*, Lecture Notes in Computer Science (LNCS), vol. 2139, pp. 133–159, Springer, 2001).
+- **DOI / URL:** https://doi.org/10.1007/s00145-002-0109-1
+- **Usage in Report:** Cited in Section 2.2 to document the foundational theoretical audit of OAEP. Shoup demonstrated that the original Bellare–Rogaway (1994) IND-CCA2 security proof could not be established for arbitrary trapdoor permutations via standard black-box reductions, identified the critical relevance of partial-domain one-wayness to obtaining stronger chosen-ciphertext security, and proposed the provably secure variant OAEP+.
+
+---
+
+### [16] RSA-OAEP is Secure under the RSA Assumption
+- **Document Title:** RSA-OAEP is Secure under the RSA Assumption
+- **Authors:** Eiichiro Fujisaki, Tatsuaki Okamoto, David Pointcheval, and Jacques Stern
+- **Publication Venue:** *Journal of Cryptology*, vol. 17, no. 2, pp. 81–104, March 2004. (Extended abstract in *Advances in Cryptology – CRYPTO 2001*, Lecture Notes in Computer Science (LNCS), vol. 2139, pp. 260–274, Springer, 2001).
+- **DOI / URL:** https://doi.org/10.1007/s00145-002-0204-3
+- **Usage in Report:** Cited in Section 2.2 as the definitive proof establishing that RSA-OAEP achieves IND-CCA2 security in the Random Oracle Model under the standard RSA one-wayness assumption. The authors proved that for the specific algebraic structure of the RSA permutation, partial-domain one-wayness is equivalent to full-domain one-wayness, confirming the cryptographic soundness of RSA-OAEP implementations (such as PKCS #1 / RFC 8017), while noting that the concrete security reduction is non-tight for practical RSA parameter lengths.
