@@ -1,6 +1,6 @@
 # Authoritative Technical References and Primary Research Sources
 
-This document catalogs the 23 primary technical standards, specifications, and foundational research sources utilized in the academic report **"Real-World Applications of RSA: Cryptographic Foundations, Practical Implementation, and Off-Chain Blockchain Authentication"**. The numbering corresponds directly to Section 7 (References) in the primary Word deliverable (`RSA_Real_World_Applications_Report.docx`).
+This document catalogs the 29 primary technical standards, specifications, and foundational research sources utilized in the academic report **"Real-World Applications of RSA: Cryptographic Foundations, Practical Implementation, and Off-Chain Blockchain Authentication"**. The numbering corresponds directly to Section 7 (References) in the primary Word deliverable (`RSA_Real_World_Applications_Report.docx`).
 
 ---
 
@@ -237,3 +237,67 @@ This document catalogs the 23 primary technical standards, specifications, and f
 - **Publication Venue:** *Advances in Cryptology – EUROCRYPT '96*, Lecture Notes in Computer Science (LNCS), vol. 1070, pp. 399–416, Springer-Verlag, 1996.
 - **DOI / URL:** https://doi.org/10.1007/3-540-68339-9_34
 - **Usage in Report:** Cited in Section 2.2 as the foundational academic research paper establishing the provable security of the Probabilistic Signature Scheme (PSS). Bellare and Rogaway introduced RSA-PSS and established its essentially tight security reduction to the RSA inversion problem in the Random Oracle Model (ROM) under existential unforgeability against chosen-message attacks (EUF-CMA). This paper is distinct from their earlier EUROCRYPT '94 research introducing OAEP (reference [17]). RFC 8017 [2] specifies the standardized engineering implementation, while Bellare and Rogaway [23] provide the underlying theoretical proof.
+
+---
+
+### [24] JSON Canonicalization Scheme (JCS)
+- **Document Title:** JSON Canonicalization Scheme (JCS)
+- **Authors:** Anders Rundgren, Brandon Jordan, and Samuel Erdtman
+- **Publishing Organization:** Internet Engineering Task Force (IETF)
+- **Series & Number:** Request for Comments (RFC) 8785 (Standards Track)
+- **Publication Date:** June 2020
+- **DOI / URL:** https://doi.org/10.17487/RFC8785
+- **Usage in Report:** Cited in Section 4.2 and Algorithm 1 as the definitive standard for canonical JSON serialization, providing the formal reference for evaluating our educational deterministic dictionary serialization.
+
+---
+
+### [25] Security Requirements for Cryptographic Modules
+- **Document Title:** Security Requirements for Cryptographic Modules
+- **Publishing Organization:** National Institute of Standards and Technology (NIST)
+- **Series & Number:** Federal Information Processing Standards Publication (FIPS) 140-3
+- **Publication Date:** March 2019
+- **DOI / URL:** https://doi.org/10.6028/NIST.FIPS.140-3
+- **Usage in Report:** Cited in Section 4.3 as the federal standard establishing security requirements for cryptographic modules hosting private keys (e.g., Hardware Security Modules), distinguishing module validation from physical product definitions.
+
+---
+
+### [26] OpenID Connect Core 1.0 incorporating errata set 1
+- **Document Title:** OpenID Connect Core 1.0 incorporating errata set 1
+- **Authors:** Nat Sakimura, John Bradley, Michael Jones, Breno de Medeiros, and Chuck Mortimore
+- **Publishing Organization:** OpenID Foundation
+- **Publication Date:** November 2014
+- **Official URL:** https://openid.net/specs/openid-connect-core-1_0.html
+- **Usage in Report:** Cited in Section 4.3 as the industry standard for customer identity authentication, separating user identity verification from transaction authorization boundaries.
+
+---
+
+### [27] Taproot: SegWit version 1 spending rules
+- **Document Title:** Taproot: SegWit version 1 spending rules
+- **Authors:** Pieter Wuille, Jonas Nick, and Anthony Towns
+- **Publishing Organization:** Bitcoin Improvement Proposals (BIP)
+- **Series & Number:** BIP 341
+- **Publication Date:** January 2020
+- **Official URL:** https://github.com/bitcoin/bips/blob/master/bip-0341.mediawiki
+- **Usage in Report:** Cited in Section 3, Section 3.1, and Table 1 to document Bitcoin Taproot's consensus rules activating BIP 340 Schnorr signatures and default 64-byte signature encodings.
+
+---
+
+### [28] Compact Signature Representation
+- **Document Title:** Compact Signature Representation
+- **Author:** Richard Moore
+- **Publishing Organization:** Ethereum Improvement Proposals (ERC)
+- **Series & Number:** ERC-2098
+- **Publication Date:** March 2019
+- **Official URL:** https://eips.ethereum.org/EIPS/eip-2098
+- **Usage in Report:** Cited in Section 3, Section 3.1, and Table 1 for Ethereum 64-byte compact signature representation ($r, yParityAndS$) compared against standard 65-byte RLP formats.
+
+---
+
+### [29] Big Integer Modular Exponentiation Precompile
+- **Document Title:** Big Integer Modular Exponentiation Precompile
+- **Authors:** Vitalik Buterin and Martin Holst Swende
+- **Publishing Organization:** Ethereum Improvement Proposals (EIP)
+- **Series & Number:** EIP-198
+- **Publication Date:** March 2017
+- **Official URL:** https://eips.ethereum.org/EIPS/eip-198
+- **Usage in Report:** Cited in Section 3.1 regarding Ethereum EVM precompile 0x05 executing big integer modular exponentiation, contrasting raw modular operations with full RSA-PSS verification in smart contracts.

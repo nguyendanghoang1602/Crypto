@@ -370,19 +370,19 @@ def generate_report():
         r.font.size = Pt(7.5)
 
     comp_data = [
-        ["Hard Problem", "Factoring", "Factoring", "EC Discrete Log", "EC Discrete Log", "Edwards EC-DLOG"],
+        ["Hard Problem", "Integer Factorization (IFP) / RSA Inversion Problem", "Integer Factorization (IFP) / RSA Inversion Problem", "EC Discrete Log (ECDLP)", "EC Discrete Log (ECDLP)", "Edwards EC-DLOG (ECDLP)"],
         ["Security Strength", "112 bits [5]", "128 bits [5]", "~128 bits (generic EC mapping [6])", "128 bits (generic EC mapping [6])", "128 bits (generic EC mapping [6])"],
         ["Key Size / Sig Size", 
          "Modulus: 256 B\nSig: 256 B\nDER PubKey: ~294 B", 
          "Modulus: 384 B\nSig: 384 B\nDER PubKey: ~422 B", 
-         "PubKey: 33 B (comp)\nBitcoin: 70–72 B (71 B sample)\nEthereum: 65 B (r||s||v), RLP; 64 B (ERC-2098)", 
-         "PubKey: 32 B (x-only)\nBIP341: 64 B (DEFAULT)\nor 65 B (explicit sighash)", 
+         "PubKey: 33 B (comp)\nBitcoin: 70–72 B (71 B sample)\nEthereum: 65 B (r||s||v), RLP; 64 B (ERC-2098 [28])", 
+         "PubKey: 32 B (x-only)\nBIP 341 [27]: 64 B (DEFAULT)\nor 65 B (explicit sighash)", 
          "PubKey: 32 B\nSig: 64 B [11]"],
         ["Relative Verify Speed", 
          f"Empirical: {r2048_ver_ms:.3f} ms\n({ratio_2048_ec}x vs ECDSA)", 
          f"Empirical: {r3072_ver_ms:.3f} ms\n({ratio_3072_ec}x vs ECDSA)", 
          f"Empirical: {ecdsa_ver_ms:.3f} ms\n(Baseline: 1.0x)", 
-         "Batch verify supported;\nnot benchmarked [8]", 
+         "Batch verify supported;\nnative compact aggregation (MuSig2 [10])", 
          "High efficiency in lit. [11];\nnot benchmarked"],
     ]
 
@@ -430,7 +430,7 @@ def generate_report():
         "witness stack expands to 1 + 3 + 256 + 3 + 256 = 519 bytes. This adds ~410–412 witness bytes per input (~103 additional virtual bytes under BIP 141), increasing virtual size by ~73% (to ~244 vB) and proportionally inflating fees. "
         "Native Bitcoin consensus does not support RSA verification; this hypothetical model illustrates why consensus layers mandate compact elliptic curve primitives. "
         "Similarly, Ethereum requires 65-byte ECDSA signatures (r, s, v) [13]; while EVM precompile 0x05 (EIP-198) executes raw modular exponentiation, full RSA-PSS verification requires substantial contract bytecode for MGF1 salt unmasking and padding checks. "
-        "Furthermore, BIP 340 Schnorr signatures [8] allow 64-byte signatures and enable multi-signature aggregation via MuSig2 (BIP 327 [10])—a capability unattainable with standard RSA."
+        "Furthermore, BIP 340 Schnorr signatures [8] integrated via Taproot (BIP 341 [27]) allow 64-byte signatures and enable native compact multi-signature aggregation into a single 64-byte on-chain signature via MuSig2 (BIP 327 [10])—a capability unattainable with standard RSASSA-PSS without specialized multi-party protocols. Similarly, Ethereum smart contracts execute modular exponentiation via precompile 0x05 (EIP-198 [29]) and support compact 64-byte signatures (ERC-2098 [28]), while full RSA-PSS requires substantial EVM bytecode for MGF1 salt unmasking."
     )
 
     add_h2("3.2 The Operational Value of RSA in Off-Chain Systems")
@@ -515,18 +515,21 @@ def generate_report():
     p_code.paragraph_format.line_spacing = 1.0
     p_code.paragraph_format.keep_together = True
     r_code = p_code.add_run(
-        "Algorithm 1: Off-Chain Withdrawal Authentication Pipeline\n"
-        "Input:  Request R = {id, net, addr, amt_atomic, nonce, ts}, Private Key SK_rsa, Public Key PK_rsa\n"
-        "Output: Decision ∈ {ACCEPT, REJECT_SIG, REJECT_REPLAY, REJECT_EXPIRED}\n"
-        "1:  M_canon ← DeterministicJSON(R)                      // Lexicographical keys, compact separators, UTF-8\n"
-        "2:  EM ← EMSA-PSS-ENCODE(M_canon, emBits=modBits−1, sLen=32) // RFC 8017 PSS encoding\n"
-        "3:  σ ← RSASP1(SK_rsa, OS2IP(EM))                       // Signature generation\n"
-        "4:  // Gateway Verification Phase\n"
-        "5:  valid_sig ← RSASSA-PSS-Verify(PK_rsa, M_canon, σ, SHA-256, sLen=32)\n"
-        "6:  if ¬ valid_sig then return REJECT_SIG                 // Tampering detected\n"
-        "7:  if |CurrentTime() − R.ts| > Δ_skew then return REJECT_EXPIRED\n"
-        "8:  if R.nonce ∈ NonceStore then return REJECT_REPLAY     // Replay detected\n"
-        "9:  NonceStore.Add(R.nonce); return ACCEPT"
+        "Algorithm 1: Off-Chain Withdrawal Authentication Pipeline (Trust Boundaries)\n"
+        "// [Boundary 1: Internal Secure Signer Service]\n"
+        "Input:  Request R = {id, net, addr, amt_atomic, nonce, ts}, Signer Private Key SK_rsa (HSM-isolated)\n"
+        "1:  M_canon ← DeterministicJSON(R)                         // Canonical JSON (RFC 8785 [24] principles)\n"
+        "2:  EM ← EMSA-PSS-ENCODE(M_canon, emBits=modBits−1, sLen=32) // RFC 8017 Section 9.1 encoding\n"
+        "3:  σ ← RSASP1(SK_rsa, OS2IP(EM))                          // Private exponentiation: s = m^d mod n\n"
+        "// [Boundary 2: Network Transit] -> Transmit payload {R, σ} to Verification Edge Gateway\n"
+        "// [Boundary 3: Edge Verification Gateway & Application State Engine]\n"
+        "Input:  Received Payload {R, σ}, Trusted Public Key PK_rsa (retrieved via authenticated PKI)\n"
+        "4:  M_canon' ← DeterministicJSON(R)                        // Re-serialize received request\n"
+        "5:  valid_sig ← RSASSA-PSS-Verify(PK_rsa, M_canon', σ, SHA-256, sLen=32) // Full EMSA-PSS verify\n"
+        "6:  if ¬ valid_sig then return REJECT_SIG                   // Integrity failure or forged signature\n"
+        "7:  if |CurrentTime() − R.ts| > Δ_skew then return REJECT_EXPIRED // Freshness window violation\n"
+        "8:  if R.nonce ∈ NonceStore then return REJECT_REPLAY       // Stateful replay detected\n"
+        "9:  NonceStore.Add(R.nonce); return ACCEPT                  // Authorize dispatch to hot wallet"
     )
     r_code.font.name = 'Consolas'
     r_code.font.size = Pt(7.0)
@@ -540,9 +543,9 @@ def generate_report():
         "To ensure academic integrity, the educational prototype must be clearly distinguished from production exchange requirements: "
         "(1) Address Validation: The prototype performs an elementary sanity check (verifying that the recipient address string is non-empty and has a minimum length of 10 characters). It does not validate a 0x prefix, hexadecimal encoding, Ethereum EIP-55 checksums, or Bitcoin Bech32/Bech32m formats; production systems require full chain-specific address decoding and checksum verification. "
         "(2) Public-Key Management: The prototype generates an RSA-2048 keypair in memory and passes the public key directly to the verifier. In production deployments of this architecture, public-key distribution requires PKI path validation, certificate revocation mechanisms (CRL/OCSP), and periodic key rotation. "
-        "(3) Private-Key Custody: The prototype stores signing keys in volatile memory for demonstration; production deployments typically protect signing keys using Hardware Security Modules (HSMs) implemented in cryptographic modules validated under FIPS 140-3, where applicable, or secure hardware enclaves based on institutional threat models. "
+        "(3) Private-Key Custody: The prototype stores signing keys in volatile memory for demonstration; production deployments typically protect signing keys using Hardware Security Modules (HSMs) implemented in cryptographic modules validated under FIPS 140-3 [25], where applicable, or secure hardware enclaves based on institutional threat models. "
         "(4) Stateful Replay Prevention: The prototype tracks nonces in volatile memory; production deployments with multiple gateway instances typically need durable, shared, atomic nonce check-and-insert mechanisms (e.g., Redis SETNX or SQL unique constraint transactions) with TTL expiration to prevent replay across distributed instances. "
-        "(5) Identity and Authorization Boundary: The RSA signature verifies only that the request was signed by the holder of the private key and that the payload was not modified in transit. Customer authentication (via MFA and OpenID Connect), withdrawal authorization, ledger balance checks, and AML compliance remain distinct application-tier responsibilities."
+        "(5) Identity and Authorization Boundary: The RSA signature verifies only that the request was signed by the holder of the private key and that the payload was not modified in transit. Customer authentication (via MFA and OpenID Connect [26]), withdrawal authorization, ledger balance checks, and AML compliance remain distinct application-tier responsibilities."
     )
 
     # -------------------------------------------------------------
@@ -731,7 +734,13 @@ def generate_report():
         "[20] National Institute of Standards and Technology, \"Module-Lattice-Based Digital Signature Standard,\" FIPS 204, August 2024. https://doi.org/10.6028/NIST.FIPS.204",
         "[21] National Institute of Standards and Technology, \"Stateless Hash-Based Digital Signature Standard,\" FIPS 205, August 2024. https://doi.org/10.6028/NIST.FIPS.205",
         "[22] M. Dworkin, \"Recommendation for Block Cipher Modes of Operation: Galois/Counter Mode (GCM) and GMAC,\" NIST SP 800-38D, November 2007. https://doi.org/10.6028/NIST.SP.800-38D",
-        "[23] M. Bellare and P. Rogaway, \"The Exact Security of Digital Signatures—How to Sign with RSA and Rabin,\" in Advances in Cryptology – EUROCRYPT '96, Lecture Notes in Computer Science, vol. 1070, pp. 399–416, Springer, 1996. https://doi.org/10.1007/3-540-68339-9_34"
+        "[23] M. Bellare and P. Rogaway, \"The Exact Security of Digital Signatures—How to Sign with RSA and Rabin,\" in Advances in Cryptology – EUROCRYPT '96, Lecture Notes in Computer Science, vol. 1070, pp. 399–416, Springer, 1996. https://doi.org/10.1007/3-540-68339-9_34",
+        "[24] A. Rundgren, B. Jordan, and S. Erdtman, \"JSON Canonicalization Scheme (JCS),\" RFC 8785, IETF, June 2020. https://doi.org/10.17487/RFC8785",
+        "[25] National Institute of Standards and Technology, \"Security Requirements for Cryptographic Modules,\" FIPS 140-3, March 2019. https://doi.org/10.6028/NIST.FIPS.140-3",
+        "[26] N. Sakimura, J. Bradley, M. Jones, B. de Medeiros, and C. Mortimore, \"OpenID Connect Core 1.0 incorporating errata set 1,\" OpenID Foundation, Nov. 2014. https://openid.net/specs/openid-connect-core-1_0.html",
+        "[27] P. Wuille, J. Nick, and A. Towns, \"Taproot: SegWit version 1 spending rules,\" Bitcoin Improvement Proposal (BIP) 341, Jan. 2020. https://github.com/bitcoin/bips/blob/master/bip-0341.mediawiki",
+        "[28] R. Moore, \"ERC-2098: Compact Signature Representation,\" Ethereum Improvement Proposals, March 2019. https://eips.ethereum.org/EIPS/eip-2098",
+        "[29] V. Buterin and M. H. Swende, \"EIP-198: Big Integer Modular Exponentiation Precompile,\" Ethereum Improvement Proposals, March 2017. https://eips.ethereum.org/EIPS/eip-198"
     ]
 
     for ref in refs:
@@ -740,12 +749,16 @@ def generate_report():
         p_ref.paragraph_format.first_line_indent = Inches(-0.18)
         r_ref = p_ref.add_run(ref)
         r_ref.font.name = 'Times New Roman'
-        r_ref.font.size = Pt(6.8)
+        r_ref.font.size = Pt(6.5)
 
     out_file = REPORT_DIR / "RSA_Real_World_Applications_Report.docx"
     doc.save(str(out_file))
     print(f"[+] Successfully wrote {out_file}")
-    return out_file
+    
+    out_final = REPORT_DIR / "RSA_Real_World_Applications_Report_FINAL.docx"
+    doc.save(str(out_final))
+    print(f"[+] Successfully wrote {out_final}")
+    return out_final
 
 
 if __name__ == "__main__":

@@ -3,32 +3,53 @@
 **Project Title:** Real-World Applications of RSA: Cryptographic Foundations, Practical Implementation, and Off-Chain Blockchain Authentication  
 **Repository:** `https://github.com/nguyendanghoang1602/Crypto`  
 **Branch:** `rsa-final-qa-2026-11-04`  
-**Audit Date:** November 4, 2026  
+**Audit Date:** November 5, 2026  
+**Auditing Panel:** Senior Cryptography Researcher, Academic Reviewer, Blockchain Security Engineer, and QA Specialist  
 
 ---
 
 ## 1. REPOSITORY & WORKSPACE VERIFICATION
 
-- **Actual Git Repository Location:** `D:\Crypto_repo` (verified via `git rev-parse --show-toplevel`)
+- **Authoritative Git Repository:** `D:\Crypto_repo` (verified via `git rev-parse --show-toplevel`)
 - **Remote Origin URL:** `https://github.com/nguyendanghoang1602/Crypto.git` (verified via `git remote get-url origin`)
 - **Workspace Clarification:** `D:\Crypto` is a local directory clone without `.git` metadata; `D:\Crypto_repo` is the authoritative Git tracking repository.
 
 ---
 
-## 2. SUMMARY OF MICRO-FIXES & PRECISION REFINEMENTS
+## 2. COMPREHENSIVE AUDIT & CONTENT MERGE SUMMARY
 
-The final micro-fix pass incorporates all 5 required technical terminology refinements:
+The final academic release consolidates and elevates Version A (local review baseline) and Version B (GitHub release candidate):
 
-1. **SHA-256 Modulus Alignment vs. Homomorphic Distinction:** Clarified that SHA-256 maps arbitrary-length messages to a fixed-length 256-bit digest, allowing RSA-PSS to operate on a fixed-length digest-derived encoding that fits the RSA modulus rather than applying RSA directly to the full message. Explicitly reiterated that SHA-256 itself does not eliminate textbook RSA's multiplicative homomorphism.
-2. **RSA-PSS Security Proof Theoretical Distinction:** Disentangled the engineering specification (RFC 8017 [2] / NIST FIPS 186-5 [4]) from foundational theoretical cryptanalysis (Bellare and Rogaway, EUROCRYPT '96 [23]), proving an essentially tight EUF-CMA security reduction to the RSA inversion problem in the Random Oracle Model (ROM).
-3. **RSA-OAEP Key Transport Terminology:** Refined key transport description to "encrypting (wrapping) an ephemeral 256-bit AES key using RSA-OAEP" (NIST SP 800-56B Rev. 2 [5] and SP 800-38D [22]), maintaining the rigorous distinction between RSA key transport and KEM encapsulation (such as ML-KEM in RFC 10024 [19]).
-4. **FIPS 140-3 Module Validation Terminology:** Corrected description to "Hardware Security Modules (HSMs) implemented in cryptographic modules validated under FIPS 140-3, where applicable," clarifying that FIPS 140-3 specifies security requirements for cryptographic modules rather than being an HSM product category.
-5. **Calibrated Distributed Production Requirements:** Refined replay prevention wording to "production deployments with multiple gateway instances typically need durable, shared, atomic nonce check-and-insert mechanisms (e.g., Redis SETNX or SQL unique constraint transactions) with TTL expiration," preserving security importance while avoiding overly rigid absolute constraints.
-6. **Enhanced Table Readability:** Slightly increased Table 1 (7.5 pt bold / 7.3 pt body) and Table 2 (7.4 pt bold / 7.2 pt body) font sizes, preserving visual clarity and strict 5-page A4 layout.
+1. **Independent Evaluation (Phase 1):** Completed in `COMPARATIVE_QUALITY_ASSESSMENT.md`. Version B (9.535 / 10 weighted score) was selected as baseline over Version A (7.885 / 10), preserving all valuable theoretical and mathematical content.
+2. **Mathematical Foundations (Phase 3 & 6):**
+   - Formalized the theoretical distinction between the **Integer Factorization Problem (IFP)** and the **RSA Inversion Problem (RSAP)**. Table 1 Row 1 updated to *"Integer Factorization (IFP) / RSA Inversion Problem"*.
+   - Extended Euclidean Algorithm solving Bézout's identity $e \cdot d + k \cdot \phi(n) = 1$.
+   - Chinese Remainder Theorem (CRT) optimization ($4\times$ speedup) and Euler's totient theorem.
+   - Textbook RSA multiplicative homomorphism: $(m_1)^e \cdot (m_2)^e \equiv (m_1 \cdot m_2)^e \pmod n$.
+3. **RSA-OAEP & RSA-PSS Rigor (Phase 3 & 6):**
+   - RSA-OAEP: Documented IND-CCA2 security reduction history in ROM (Bellare-Rogaway 1994, Shoup 2001, Fujisaki et al. 2001). Correct key wrapping terminology: *"encrypting (wrapping) an ephemeral 256-bit AES key using RSA-OAEP to protect bulk data authenticated with AES-GCM (NIST SP 800-38D [22]), maintaining distinction from KEM encapsulation (such as ML-KEM in RFC 10024 [19])"*.
+   - RSA-PSS: Attributed foundational theoretical EUF-CMA proof in ROM to Bellare and Rogaway (EUROCRYPT '96 [23]). Clarified that SHA-256 provides a fixed-length digest-derived encoding that fits the modulus, while structured EMSA-PSS encoding and verification prevent algebraic attacks.
+4. **Key Separation & TLS 1.3 PKI (Phase 3 & 6):**
+   - Grounded NIST FIPS 186-5 Section 5.1 [4] key separation in preventing cross-protocol interactions, enforcing purpose separation, and reducing compromise impact.
+   - Deconstructed TLS 1.3: (i) X.509 CA identity binding; (ii) `CertificateVerify` transcript signing; and (iii) RFC 9846 [3] RSA-PSS server mandate (CA signature is separate and not required to be RSA-PSS), with RFC 9963 [18] client legacy exceptions preserved.
+5. **Blockchain Technical Modeling (Phase 3 & 6):**
+   - Delineated sub-exponential GNFS from fully exponential Pollard's rho $\mathcal{O}(\sqrt{q})$ in cyclic group of prime order $q$.
+   - Explicit simplified 256-byte modulus assumption ($1 + 3 + 256 + 3 + 256 = 519\text{ bytes}$, $+410\text{–}412\text{ bytes}$, $+103\text{ vB}$, $\approx 73\%$ increase over 141-vB baseline P2WPKH).
+   - Scoped MuSig2 (BIP 327 [10]) to native compact signature aggregation. Explicitly cited BIP 341 [27], ERC-2098 [28], and EIP-198 [29].
+6. **Side-Channel & Fault Attacks (Phase 3):**
+   - Bellcore CRT hardware fault attack (Boneh et al., 2001 [7]): formulated single-fault ($p = \gcd((s')^e - m, n)$) and two-signature fault conditions. Clarified why base blinding defends against timing attacks but not CRT faults; fault mitigation mandates post-computation verification ($s^e \bmod n == m$).
+7. **Implementation Architecture & Trust Boundaries (Phase 4 & 6):**
+   - Algorithm 1 annotated with explicit trust boundaries: (1) Internal Secure Signer Service; (2) Network Transit; and (3) Edge Verification Gateway.
+   - Calibrated production considerations: cryptographic modules validated under FIPS 140-3 [25], durable shared atomic nonce check-and-insert (Redis SETNX / SQL unique constraints), MFA and OpenID Connect [26].
+   - Specified withdrawal amount in Scenario 1 as integer amount in wei ($12,500,000,000,000,000,000$ wei).
+8. **Restrained Wycheproof Interpretation (Phase 4):**
+   - 108/108 passing test vectors reframed as demonstrating agreement with that selected test set without claiming full protocol certification or absence of all vulnerabilities.
+9. **Comprehensive 29-Reference Bibliography (Phase 5):**
+   - Fully cataloged and verified in `REFERENCE_AUDIT.md`, adding formal entries [24]–[29] for RFC 8785 [24], FIPS 140-3 [25], OpenID Connect [26], BIP 341 [27], ERC-2098 [28], and EIP-198 [29].
 
 ---
 
-## 3. BENCHMARK STRUCTURE & MEASUREMENT COUNT
+## 3. BENCHMARK DATASET INTEGRITY & MEASUREMENT COUNT
 
 The empirical benchmark dataset in `03_Experimental_Data/raw_benchmark_logs/raw_trials_all_algorithms.csv` and `benchmark_results.csv` contains exactly **840 raw measurements** with the following verified structure:
 
@@ -41,58 +62,34 @@ The empirical benchmark dataset in `03_Experimental_Data/raw_benchmark_logs/raw_
 
 ---
 
-## 4. BIBLIOGRAPHY CITATION CROSS-REFERENCE TABLE (23 REFERENCES)
-
-| Reference | Standard / Literature | In-Text Citation Location | Academic Venue / Organization | Verified |
-| :--- | :--- | :--- | :--- | :---: |
-| **[1]** | Rivest, Shamir, & Adleman (1978/1977) | Section 1, Section 2.1 | CACM / MIT Memorandum | **YES** |
-| **[2]** | PKCS #1 v2.2 (RFC 8017) | Section 1, Section 2.1, Section 2.2 | IETF Informational | **YES** |
-| **[3]** | TLS 1.3 Protocol (RFC 9846, supersedes RFC 8446) | Section 1, Section 2.3 | IETF Standards Track | **YES** |
-| **[4]** | Digital Signature Standard (NIST FIPS 186-5) | Section 2.2 | NIST Standard (Key Separation) | **YES** |
-| **[5]** | Pair-Wise Key Establishment (NIST SP 800-56B Rev. 2) | Section 2.2, Section 2.3, Section 3, Table 1, Table 2 | NIST Special Publication (6 authors) | **YES** |
-| **[6]** | Key Management Part 1 (NIST SP 800-57 Part 1 Rev. 5) | Section 3, Table 1, Table 2 | NIST Special Publication | **YES** |
-| **[7]** | Bellcore CRT Fault Attack (Boneh et al., 2001) | Section 3.2 | Journal of Cryptology | **YES** |
-| **[8]** | Schnorr Signatures for secp256k1 (BIP 340) | Section 1, Section 3, Section 3.1, Table 1 | Bitcoin Improvement Proposal | **YES** |
-| **[9]** | Segregated Witness Consensus (BIP 141) | Section 3.1 | Bitcoin Improvement Proposal | **YES** |
-| **[10]** | MuSig2 Multi-Signatures (BIP 327) | Section 3.1 | Bitcoin Improvement Proposal | **YES** |
-| **[11]** | Edwards-Curve Digital Signatures (RFC 8032) | Section 3, Table 1 | IETF Standards Track | **YES** |
-| **[12]** | Bitcoin Developer Guide: Transactions | Section 1, Section 3, Section 3.1, Table 1 | Bitcoin Core Reference | **YES** |
-| **[13]** | Ethereum Developer Documentation: Transactions | Section 1, Section 3, Section 3.1, Table 1 | Ethereum Foundation Docs | **YES** |
-| **[14]** | Project Wycheproof Test Vectors (v0.9 Snapshot) | Section 5.2 | Google Security Research | **YES** |
-| **[15]** | OAEP Reconsidered (Shoup, 2002 / CRYPTO 2001) | Section 2.2 | Journal of Cryptology / LNCS 2139 | **YES** |
-| **[16]** | RSA-OAEP Security (Fujisaki et al., 2004 / CRYPTO 2001) | Section 2.2 | Journal of Cryptology / LNCS 2139 | **YES** |
-| **[17]** | Optimal Asymmetric Encryption (Bellare-Rogaway, 1995) | Section 2.2 | EUROCRYPT '94 / LNCS 950 | **YES** |
-| **[18]** | Legacy RSASSA-PKCS1-v1_5 Code Points (RFC 9963) | Section 2.3 | IETF Standards Track | **YES** |
-| **[19]** | PQ/T Hybrid Key Agreement (RFC 10024) | Section 2.3 | IETF Standards Track | **YES** |
-| **[20]** | Module-Lattice-Based DSS (NIST FIPS 204) | Section 6 (Conclusion) | NIST Standard (ML-DSA) | **YES** |
-| **[21]** | Stateless Hash-Based DSS (NIST FIPS 205) | Section 6 (Conclusion) | NIST Standard (SLH-DSA) | **YES** |
-| **[22]** | Galois/Counter Mode AES-GCM (NIST SP 800-38D) | Section 2.2, Section 2.3 | NIST Special Publication | **YES** |
-| **[23]** | Exact Security of Signatures (Bellare-Rogaway, 1996) | Section 2.2 | EUROCRYPT '96 / LNCS 1070 | **YES** |
-
----
-
-## 5. DOCUMENT LAYOUT & VERIFICATION METRICS
+## 4. DOCUMENT LAYOUT & VERIFICATION METRICS
 
 - **Primary Word Document:** Exactly **5 A4 pages** (`doc.ComputeStatistics(2) == 5`).
 - **Rendered PDF Document:** Exactly **5 Pages** (`len(pdf) == 5`).
-- **Word Count:** **4,688 words**.
+- **Word Count:** **4,939 words** across 144 paragraphs.
 - **Page-by-Page Structural Distribution:**
   - **Page 1:** Title, Metadata, Abstract, Keywords, Section 1 (Introduction), Section 2.1 (Math Foundations).
-  - **Page 2:** Section 2.2 (OAEP vs. PSS, FIPS 186-5 Key Separation), Figure 1 (RSA-PSS Workflow), Section 2.3 (Applications), Section 3 (Why RSA?), Table 1 (Comparison Table + Caption), Section 3.1 start.
+  - **Page 2:** Section 2.2 (OAEP vs. PSS, FIPS 186-5 Key Separation), Figure 1 (RSA-PSS Workflow), Section 2.3 (Applications), Section 3 (Why RSA?), Table 1 (Comparison Matrix + Caption), Section 3.1 start.
   - **Page 3:** Section 3.1 (Blockchain Trade-offs), Section 3.2 (Operational Value, CRT Faults), Section 4 (Proposed Design), Section 4.1 (Component Decomposition), Figure 2 (Architecture Diagram + Caption).
-  - **Page 4:** Section 4.2 (Deterministic JSON), Algorithm 1 (Unified Box), Section 4.3 (Prototype Scope), Section 5 (Experimental Results), Section 5.1 (Scenarios), Section 5.2 (Wycheproof), Section 5.3 (Benchmark Intro), Table 2 Caption, Table 2 (All 4 rows unified).
-  - **Page 5:** Figure 3 (Performance Chart + Caption), Performance Discussion (3 points), Section 6 (Conclusion), Section 7 (References [1]–[23] concluding cleanly).
+  - **Page 4:** Section 4.2 (Deterministic JSON), Algorithm 1 (Unified Box with Trust Boundaries), Section 4.3 (Prototype Scope), Section 5 (Experimental Results), Section 5.1 (Scenarios), Section 5.2 (Wycheproof), Section 5.3 (Benchmark Intro), Table 2 Caption, Table 2 (All 4 rows unified).
+  - **Page 5:** Figure 3 (Performance Chart + Caption), Performance Discussion (3 points), Section 6 (Conclusion), Section 7 (References [1]–[29] concluding cleanly).
 - **Wycheproof Compliance:** **108 / 108 test cases passing** (63 valid accepted, 45 invalid rejected, 0 failures).
 - **Operational Scenarios:** 5 / 5 target security scenarios validated.
 - **Protected File Status:** `rsa_pss_experiment.py`, `generate_figures.py`, `benchmark_results.csv`, `raw_trials_all_algorithms.csv`, figure images, and Wycheproof test vectors remain **100% UNMODIFIED**.
 
 ---
 
-## 6. DELIVERABLE ARTIFACT CHECKSUMS (SHA-256)
+## 5. DELIVERABLE ARTIFACT CHECKSUMS (SHA-256)
 
 | Deliverable File | Size (Bytes) | SHA-256 Hash |
 | :--- | :--- | :--- |
-| `01_Final_Report/RSA_Real_World_Applications_Report.docx` | 456,097 | `bd22edd278447aacd99c4217a2b8927ba70a4b2156af615efcf78f229323fe68` |
-| `01_Final_Report/RSA_Real_World_Applications_Report.pdf` | 448,481 | `2e52cf0de3455c8b7fe98fa1bdb2bde70fdb5430993f36534b180de173669f82` |
-| `02_Source_Code/build_report_doc.py` | 59,397 | `244b68504d0ceaded4c664032730952bc6c850fd93fc539b2356cfe3a21e4158` |
-| `05_Research_References/Research_Sources.md` | 21,982 | `549eed32cb7aabd1a71812f96ccc3ef13a96af84de7d69e7762a7b10c9758336` |
+| `01_Final_Report/RSA_Real_World_Applications_Report_FINAL.docx` | 456,896 | `b62d9f4d53e18d2d2a4b2aeecea06ebd0f9253909ef32dec4d7e9e814adea250` |
+| `01_Final_Report/RSA_Real_World_Applications_Report_FINAL.pdf` | 452,538 | `b8393e09608a1a3ac9d13952cd5615776e209da05d83cb7cfbc299496b9dccaa` |
+| `01_Final_Report/RSA_Real_World_Applications_Report.docx` | 456,896 | `b62d9f4d53e18d2d2a4b2aeecea06ebd0f9253909ef32dec4d7e9e814adea250` |
+| `01_Final_Report/RSA_Real_World_Applications_Report.pdf` | 452,538 | `b8393e09608a1a3ac9d13952cd5615776e209da05d83cb7cfbc299496b9dccaa` |
+| `02_Source_Code/build_report_doc.py` | 61,730 | `6b72fa998a5eb7c6dc019390966184b5de849d88f6fe76259bcc6ebee9de5d06` |
+| `05_Research_References/Research_Sources.md` | 25,603 | `5a45e4b2a9c461211da1ad4b37fce3eab02db7d182d0d909332662b4e33e2dea` |
+| `COMPARATIVE_QUALITY_ASSESSMENT.md` | 13,521 | `ba4b55aef16bf856d7f2b5fbf05f5fa122ca640871dd515e4024b5ddfeb34d55` |
+| `CONTENT_MERGE_CHANGELOG.md` | 9,255 | `3f8e9aae9061619998a4ad224273176a0778271fe07a3b33f68a67451a349b23` |
+| `TECHNICAL_ISSUE_REGISTER.md` | 18,223 | `439f9983f425fbf27d5807b70ae640c5dd54706583b7a364aa71081bb10d680c` |
+| `REFERENCE_AUDIT.md` | 11,752 | `3f21ce8d15a91bc0203e2873fbe275bd02aa568748d8483e0545cc8ee0707543` |
