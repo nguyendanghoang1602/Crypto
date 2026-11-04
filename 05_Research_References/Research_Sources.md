@@ -1,6 +1,6 @@
 # Authoritative Technical References and Primary Research Sources
 
-This document catalogs the 17 primary technical standards, specifications, and foundational research sources utilized in the academic report **"Real-World Applications of RSA: Cryptographic Foundations, Practical Implementation, and Off-Chain Blockchain Authentication"**. The numbering corresponds directly to Section 7 (References) in the primary Word deliverable (`RSA_Real_World_Applications_Report.docx`).
+This document catalogs the 22 primary technical standards, specifications, and foundational research sources utilized in the academic report **"Real-World Applications of RSA: Cryptographic Foundations, Practical Implementation, and Off-Chain Blockchain Authentication"**. The numbering corresponds directly to Section 7 (References) in the primary Word deliverable (`RSA_Real_World_Applications_Report.docx`).
 
 ---
 
@@ -48,7 +48,7 @@ This document catalogs the 17 primary technical standards, specifications, and f
 
 ### [5] Recommendation for Pair-Wise Key-Establishment Schemes Using Integer Factorization Cryptography
 - **Document Title:** Recommendation for Pair-Wise Key-Establishment Schemes Using Integer Factorization Cryptography
-- **Authors:** Elaine Barker, Lily Chen, Allen Roginsky, Apostol Vassilev, and Richard Davis
+- **Authors:** Elaine Barker, Lily Chen, Allen Roginsky, Apostol Vassilev, Richard Davis, and Scott Simon
 - **Publishing Organization:** National Institute of Standards and Technology (NIST)
 - **Series & Number:** NIST Special Publication (SP) 800-56B Revision 2
 - **Publication Date:** March 2019
@@ -95,7 +95,7 @@ This document catalogs the 17 primary technical standards, specifications, and f
 - **Series & Number:** BIP 141
 - **Publication Date:** December 2015
 - **Official URL:** https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki
-- **Usage in Report:** Cited in Section 3.1 to rigorously explain transaction weight ($\text{Weight} = (\text{Base} \times 3) + \text{Total}$) and virtual size ($\text{vSize} = \lceil \text{Weight} / 4 \rceil$). A typical P2WPKH witness stack totals approximately $107\text{–}109\text{ bytes}$ (1-byte count, 1-byte signature length, $\sim 70\text{–}72\text{ byte}$ DER signature plus sighash, 1-byte pubkey length, and 33-byte compressed pubkey). For a hypothetical RSA-2048 witness carrying two separate stack items (256-byte modulus and 256-byte signature, each with a 3-byte CompactSize prefix), the witness size equals $1 + 3 + 256 + 3 + 256 = 519\text{ bytes}$, adding approximately $410\text{–}412\text{ witness bytes}$ per input ($\approx 103\text{ additional virtual bytes}$). For a representative 141-vB baseline transaction, this hypothetical expansion is approximately $73\%$. The report explicitly notes that this is a hypothetical format, native Bitcoin RSA verification is not supported, the model assumes both values are carried in each input, and alternative key-storage designs would substantially alter the overhead.
+- **Usage in Report:** Cited in Section 3.1 to rigorously explain transaction weight ($\text{Weight} = (\text{Base} \times 3) + \text{Total}$) and virtual size ($\text{vSize} = \lceil \text{Weight} / 4 \rceil$). A typical P2WPKH witness stack totals approximately $107\text{–}109\text{ bytes}$ (1-byte count, 1-byte signature length, $\sim 70\text{–}72\text{ byte}$ DER signature plus sighash, 1-byte pubkey length, and 33-byte compressed pubkey). For a hypothetical RSA-2048 witness carrying two separate stack items—modeled under the simplified assumption of a 256-byte modulus payload (treating public exponent $e = 65,537$ as implicit or fixed, rather than complete DER-encoded public-key structures which span $\approx 294\text{ bytes}$) and a 256-byte RSA signature, each with a 3-byte CompactSize prefix—the witness size equals $1 + 3 + 256 + 3 + 256 = 519\text{ bytes}$, adding approximately $410\text{–}412\text{ witness bytes}$ per input ($\approx 103\text{ additional virtual bytes}$). For a representative 141-vB baseline transaction, this hypothetical expansion is approximately $73\%$. The report explicitly notes that this is a hypothetical model, native Bitcoin consensus rules do not support RSA verification, the model assumes both values are carried in each input, and alternative key-storage designs would substantially alter the overhead.
 
 ---
 
@@ -175,3 +175,56 @@ This document catalogs the 17 primary technical standards, specifications, and f
 - **Publication Venue:** *Advances in Cryptology – EUROCRYPT '94*, Lecture Notes in Computer Science (LNCS), vol. 950, pp. 92–111, Springer-Verlag, 1995.
 - **DOI / URL:** https://doi.org/10.1007/BFb0053428
 - **Usage in Report:** Cited in Section 2.2 as the original academic formulation of Optimal Asymmetric Encryption Padding (OAEP). Bellare and Rogaway introduced OAEP and established semantic security against chosen-plaintext attacks (IND-CPA) and plaintext awareness (implying chosen-ciphertext security IND-CCA1 for general trapdoor permutations in the Random Oracle Model), without establishing general IND-CCA2 security under standard one-wayness.
+
+---
+
+### [18] Legacy RSASSA-PKCS1-v1_5 Code Points for TLS 1.3
+- **Document Title:** Legacy RSASSA-PKCS1-v1_5 Code Points for TLS 1.3
+- **Authors:** David Benjamin and Andrey Popov
+- **Publishing Organization:** Internet Engineering Task Force (IETF)
+- **Series & Number:** Request for Comments (RFC) 9963 (Standards Track)
+- **Publication Date:** April 2026
+- **DOI / URL:** https://doi.org/10.17487/RFC9963
+- **Usage in Report:** Cited in Section 2.3 to document the restricted legacy exception permitting client certificate authentication with RSASSA-PKCS1-v1_5 in constrained environments. Crucially notes that RFC 9963 does not permit PKCS#1 v1.5 for TLS 1.3 server authentication (which strictly mandates RSA-PSS under RFC 9846 when RSA keys are used).
+
+---
+
+### [19] Post-Quantum Traditional (PQ/T) Hybrid Key Agreement Mechanisms for TLS 1.3
+- **Document Title:** Post-Quantum Traditional (PQ/T) Hybrid Key Agreement Mechanisms for TLS 1.3
+- **Authors:** Kris Kwiatkowski, Panos Kampanakis, Bas Westerbaan, and Douglas Stebila
+- **Publishing Organization:** Internet Engineering Task Force (IETF)
+- **Series & Number:** Request for Comments (RFC) 10024 (Standards Track)
+- **Publication Date:** August 2026
+- **DOI / URL:** https://doi.org/10.17487/RFC10024
+- **Usage in Report:** Cited in Section 2.3 to document hybrid post-quantum key agreement standards combining post-quantum mechanisms (e.g., ML-KEM) with traditional ECDHE to establish post-quantum forward secrecy in TLS 1.3.
+
+---
+
+### [20] Module-Lattice-Based Digital Signature Standard
+- **Document Title:** Module-Lattice-Based Digital Signature Standard
+- **Publishing Organization:** National Institute of Standards and Technology (NIST)
+- **Series & Number:** Federal Information Processing Standards Publication (FIPS) 204
+- **Publication Date:** August 2024
+- **DOI / URL:** https://doi.org/10.6028/NIST.FIPS.204
+- **Usage in Report:** Cited in Section 6 (Conclusion) as a primary standardized post-quantum digital signature algorithm (ML-DSA, derived from CRYSTALS-Dilithium) to which enterprise architectures deploying RSA-3072 must prepare migration pathways to resist Shor's algorithm on quantum computers.
+
+---
+
+### [21] Stateless Hash-Based Digital Signature Standard
+- **Document Title:** Stateless Hash-Based Digital Signature Standard
+- **Publishing Organization:** National Institute of Standards and Technology (NIST)
+- **Series & Number:** Federal Information Processing Standards Publication (FIPS) 205
+- **Publication Date:** August 2024
+- **DOI / URL:** https://doi.org/10.6028/NIST.FIPS.205
+- **Usage in Report:** Cited in Section 6 (Conclusion) as the standardized stateless hash-based post-quantum signature standard (SLH-DSA, derived from SPHINCS+) providing quantum-resistant digital signatures based on minimal cryptographic assumptions.
+
+---
+
+### [22] Recommendation for Block Cipher Modes of Operation: Galois/Counter Mode (GCM) and GMAC
+- **Document Title:** Recommendation for Block Cipher Modes of Operation: Galois/Counter Mode (GCM) and GMAC
+- **Author:** Morris Dworkin
+- **Publishing Organization:** National Institute of Standards and Technology (NIST)
+- **Series & Number:** NIST Special Publication (SP) 800-38D
+- **Publication Date:** November 2007
+- **DOI / URL:** https://doi.org/10.6028/NIST.SP.800-38D
+- **Usage in Report:** Cited in Section 2.2 and Section 2.3 as the definitive technical standard specifying Galois/Counter Mode (AES-GCM) authenticated encryption, resolving the previous misattribution of AES-GCM to NIST SP 800-56B Rev. 2.
