@@ -298,14 +298,14 @@ def generate_report():
         "Shoup (CRYPTO 2001, Journal of Cryptology 2002 [15]) showed that a general IND-CCA2 proof cannot be established for arbitrary permutations under standard one-wayness, proposing OAEP+. "
         "Fujisaki, Okamoto, Pointcheval, and Stern (CRYPTO 2001, Journal of Cryptology 2004 [16]) proved that RSA-OAEP achieves IND-CCA2 security under the standard RSA assumption via partial-domain one-wayness equivalence, though the reduction is non-tight for practical key sizes. "
         "Because RSAES-OAEP payload capacity is bounded by mLen <= k - 2hLen - 2 (RFC 8017 [2]; 190 bytes for RSA-2048 with SHA-256), "
-        "production systems deploy RSA-OAEP for hybrid key transport (NIST SP 800-56B Rev. 2 [5])—encapsulating an ephemeral 256-bit AES key used with AES-GCM (NIST SP 800-38D [22]) for authenticated bulk encryption.\n"
-        "• Digital Signatures (Authenticity, Integrity, Non-Repudiation Evidence): Under the hash-and-sign paradigm, SHA-256 maps arbitrary-length messages to a fixed-length 256-bit digest, making signing practical and preventing modular overflow. "
-        "However, hashing alone does not eliminate textbook RSA's multiplicative homomorphism. Instead, RSA-PSS (RFC 8017 / NIST FIPS 186-5 [2], [4]) satisfies Existential Unforgeability under Chosen-Message Attacks (EUF-CMA) because its structured encoding (EMSA-PSS), randomized salt, and complete verification prevent algebraic attacks. "
-        "In signing, digest mHash = SHA-256(M) and a randomized salt are encoded into octets EM, converted to m = OS2IP(EM), and signed via s = RSASP1(SK, m) = m^d mod n. "
+        "production systems deploy RSA-OAEP for hybrid key transport (NIST SP 800-56B Rev. 2 [5])—encrypting (wrapping) an ephemeral 256-bit AES key using RSA-OAEP to protect bulk data authenticated with AES-GCM (NIST SP 800-38D [22]), maintaining the distinction between RSA key transport and KEM encapsulation (such as ML-KEM in RFC 10024 [19]).\n"
+        "• Digital Signatures (Authenticity, Integrity, Non-Repudiation Evidence): Under the hash-and-sign paradigm, SHA-256 maps arbitrary-length messages to a fixed-length 256-bit digest, allowing RSA-PSS to operate on a fixed-length digest-derived encoding that fits the RSA modulus rather than applying RSA directly to the full message. "
+        "However, SHA-256 itself does not eliminate textbook RSA's multiplicative homomorphism. "
+        "While RFC 8017 [2] and NIST FIPS 186-5 [4] specify the standardized engineering scheme, Bellare and Rogaway [23] established its foundational theoretical security analysis, proving that RSA-PSS achieves an essentially tight EUF-CMA security reduction to the RSA inversion problem in the Random Oracle Model (ROM). "
+        "In signing, digest mHash = SHA-256(M) and a randomized salt are encoded via EMSA-PSS into octets EM, converted to integer representative m = OS2IP(EM), and signed via private exponentiation s = RSASP1(SK, m) = m^d mod n. "
         "During verification, the verifier recovers m = RSAVP1(PK, s) = s^e mod n, formats EM = I2OSP(m, emLen), and executes EMSA-PSS-VERIFY(M, EM, emBits). "
         "Modular exponentiation alone does not establish signature validity; full EMSA-PSS verification—unmasking salt via MGF1, checking padding (0xBC trailer), and verifying hash consistency—is indispensable. "
-        "While RFC 8017 [2] specifies the standardized engineering scheme, Bellare and Rogaway [23] established the foundational theoretical analysis, proving an essentially tight security reduction to the RSA problem in the ROM. "
-        "Signatures provide mathematical non-repudiation evidence, while comprehensive non-repudiation requires identity binding, audit trails, and key custody.\n"
+        "Signatures provide mathematical non-repudiation evidence, while comprehensive non-repudiation requires identity binding, audit trails, and secure key custody.\n"
         "• Cryptographic Key Separation (NIST FIPS 186-5 Section 5.1 / SP 800-57): NIST FIPS 186-5 Section 5.1 [4] explicitly mandates cryptographic key separation: an RSA key pair designated for digital signatures shall not be used for key establishment or encryption (such as RSA-OAEP). "
         "Maintaining separate key pairs prevents cross-protocol interactions between disparate padding schemes, enforces strict cryptographic purpose separation, minimizes compromise impact, and simplifies compliance auditing. "
         "Systems utilizing both signing and encryption must enforce distinct key pairs, separate certificate hierarchies, and independent key-management policies."
@@ -328,7 +328,7 @@ def generate_report():
     p = add_p()
     p.add_run(
         "In industrial systems, RSA is deployed across three primary operational domains: "
-        "(1) Hybrid Encryption and Key Transport: Rather than encrypting bulk data directly, RSA-OAEP is deployed for key transport—securely transporting ephemeral symmetric keys (e.g., a 256-bit AES key used with AES-GCM [22] per NIST SP 800-56B Rev. 2 [5]) to combine asymmetric key establishment with high-throughput symmetric transmission. "
+        "(1) Hybrid Encryption and Key Transport: Rather than encrypting bulk data directly, RSA-OAEP is deployed for key transport—securely encrypting (wrapping) an ephemeral 256-bit AES key used with AES-GCM [22] per NIST SP 800-56B Rev. 2 [5] to combine asymmetric key transport with high-throughput symmetric transmission. "
         "(2) Code Signing and Firmware Integrity: Operating systems, application ecosystems, and secure bootloaders widely utilize RSA digital signatures (both RSA-PSS and legacy PKCS#1 v1.5) to verify executable integrity before launch. "
         "(3) Digital Certificates and PKI: In TLS 1.3 (RFC 9846 [3], superseding RFC 8446), static RSA key exchange was removed to ensure forward secrecy through ephemeral Diffie-Hellman ((EC)DHE). "
         "To prepare for post-quantum threats, RFC 10024 [19] defines hybrid key agreement combining post-quantum mechanisms (ML-KEM) with traditional ECDHE. "
@@ -367,7 +367,7 @@ def generate_report():
         p_c.paragraph_format.space_after = Pt(0)
         r = p_c.add_run(h)
         r.bold = True
-        r.font.size = Pt(7.4)
+        r.font.size = Pt(7.5)
 
     comp_data = [
         ["Hard Problem", "Factoring", "Factoring", "EC Discrete Log", "EC Discrete Log", "Edwards EC-DLOG"],
@@ -397,7 +397,7 @@ def generate_report():
             p_c.paragraph_format.space_before = Pt(0)
             p_c.paragraph_format.space_after = Pt(0)
             r = p_c.add_run(val)
-            r.font.size = Pt(7.2)
+            r.font.size = Pt(7.3)
 
     # CantSplit and keepWithNext for Table 1
     for row_idx, row_obj in enumerate(tbl_comp.rows):
@@ -540,8 +540,8 @@ def generate_report():
         "To ensure academic integrity, the educational prototype must be clearly distinguished from production exchange requirements: "
         "(1) Address Validation: The prototype performs an elementary sanity check (verifying that the recipient address string is non-empty and has a minimum length of 10 characters). It does not validate a 0x prefix, hexadecimal encoding, Ethereum EIP-55 checksums, or Bitcoin Bech32/Bech32m formats; production systems require full chain-specific address decoding and checksum verification. "
         "(2) Public-Key Management: The prototype generates an RSA-2048 keypair in memory and passes the public key directly to the verifier. In production deployments of this architecture, public-key distribution requires PKI path validation, certificate revocation mechanisms (CRL/OCSP), and periodic key rotation. "
-        "(3) Private-Key Custody: The prototype stores signing keys in volatile memory for demonstration; production deployments typically protect signing keys using Hardware Security Modules (HSMs, e.g., FIPS 140-3) or secure hardware enclaves based on institutional threat models and compliance mandates. "
-        "(4) Stateful Replay Prevention: The prototype tracks nonces in volatile memory; production systems require persistent, distributed, atomic check-and-insert mechanisms (e.g., Redis SETNX or SQL unique constraints) with TTL expiration. "
+        "(3) Private-Key Custody: The prototype stores signing keys in volatile memory for demonstration; production deployments typically protect signing keys using Hardware Security Modules (HSMs) implemented in cryptographic modules validated under FIPS 140-3, where applicable, or secure hardware enclaves based on institutional threat models. "
+        "(4) Stateful Replay Prevention: The prototype tracks nonces in volatile memory; production deployments with multiple gateway instances typically need durable, shared, atomic nonce check-and-insert mechanisms (e.g., Redis SETNX or SQL unique constraint transactions) with TTL expiration to prevent replay across distributed instances. "
         "(5) Identity and Authorization Boundary: The RSA signature verifies only that the request was signed by the holder of the private key and that the payload was not modified in transit. Customer authentication (via MFA and OpenID Connect), withdrawal authorization, ledger balance checks, and AML compliance remain distinct application-tier responsibilities."
     )
 
@@ -604,7 +604,7 @@ def generate_report():
         p_c.paragraph_format.space_after = Pt(0)
         r = p_c.add_run(h)
         r.bold = True
-        r.font.size = Pt(7.2)
+        r.font.size = Pt(7.4)
 
     bench_rows = [
         ["RSA-2048", f"{r2048['security_strength_bits']} bits [5]", f"{r2048['keygen_median_ms']} ms", f"{r2048['sign_median_ms']} ms", f"{r2048['verify_median_ms']} ms", f"{r2048['signature_length_bytes']} B", f"{r2048['internal_asymmetry_ratio']}x (Sign / Verify)"],
@@ -624,7 +624,7 @@ def generate_report():
             p_c.paragraph_format.space_before = Pt(0)
             p_c.paragraph_format.space_after = Pt(0)
             r = p_c.add_run(val)
-            r.font.size = Pt(7.0)
+            r.font.size = Pt(7.2)
 
     # CRITICAL: Table 2 keep-together enforcement across all rows
     for row_idx, row_obj in enumerate(tbl_bench.rows):
