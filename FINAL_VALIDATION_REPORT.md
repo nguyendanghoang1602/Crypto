@@ -69,7 +69,9 @@ The hypothetical Bitcoin witness calculation in Section 3.1 ($1 + 3 + 256 + 3 + 
 
 - **Primary Word Document:** Exactly **5 A4 pages** (`doc.ComputeStatistics(2) == 5`).
 - **Rendered PDF Document:** Exactly **5 Pages** (`len(pdf) == 5`).
-- **Word Count:** **4,479 words**.
+- **Word Count:** **4,729 words**.
+- **Paragraph Count:** **137 paragraphs**.
+- **Character Count (w/ spaces):** **30,238 characters**.
 - **Table 2 Placement:** Table 2 caption and **all four data rows** (RSA-2048, RSA-3072, RSA-4096, ECDSA-secp256k1) reside entirely on **Page 4** with 89.1 pt bottom margin clearance.
 - **Algorithm 1:** Boxed and unified on **Page 4** (`w:cantSplit`, `keep_together`).
 - **Figures:**
@@ -79,3 +81,14 @@ The hypothetical Bitcoin witness calculation in Section 3.1 ($1 + 3 + 256 + 3 + 
 - **Wycheproof Compliance:** **108 / 108 test cases passing** (63 valid accepted, 45 invalid rejected, 0 failures).
 - **Operational Scenarios:** 5 / 5 target security scenarios validated.
 - **Protected File Status:** `rsa_pss_experiment.py`, `generate_figures.py`, `benchmark_results.csv`, `raw_trials_all_algorithms.csv`, figure images, and Wycheproof test vectors remain **100% UNMODIFIED**.
+
+---
+
+## 6. DELIVERABLE ARTIFACT CHECKSUMS (SHA-256)
+
+| Deliverable File | Size (Bytes) | SHA-256 Hash |
+| :--- | :--- | :--- |
+| `01_Final_Report/RSA_Real_World_Applications_Report.docx` | 456,330 | `77d74bc4e15cf5bb3bf7f4cbf99866b0275ee1de27788ea68f35f1d62603ce79` |
+| `01_Final_Report/RSA_Real_World_Applications_Report.pdf` | 468,056 | `449a0fb198c4ea4363c5fdaec8b561e3fea19a75278b443965aae948ec677356` |
+| `02_Source_Code/build_report_doc.py` | 58,504 | `8f1f15aed94220471f2b6a84df1fe58f3002d164f270a9a2fff508028c6957d2` |
+| `05_Research_References/Research_Sources.md` | 20,586 | `2af3e0672f105b6dd83fbb2225004738bbe392b7af8b1474b6385a75be2993b1` |

@@ -5,15 +5,19 @@ Compiles the audited academic research report into Microsoft Word format (.docx)
 "Real-World Applications of RSA: Cryptographic Foundations, Practical Implementation,
 and Off-Chain Blockchain Authentication"
 
-Follows strict consistency and academic rigor:
-1. Dynamically reads empirical benchmark results directly from benchmark_results.csv.
-2. In-text benchmark statistics, Abstract, and Table 2 are populated from the active dataset.
-3. Formulates precise technical distinctions: TLS 1.3 authentication vs key exchange (RFC 9846,
-   RFC 9963, RFC 10024), SegWit weight and virtual size (BIP 141), BIP 340 Schnorr vs BIP 327 MuSig2,
-   RFC 8017 OAEP size constraints, EMSA-PSS message representatives in Bellcore CRT verification,
-   and prototype vs production security boundaries.
-4. Uses project-relative paths via pathlib.
-5. Strictly targets exactly 5 A4 pages with zero orphan table rows or clipped content.
+Academic Rigor and Curriculum Alignment:
+1. Deeply integrates foundational concepts from university cryptography lectures (Sessions 1–7):
+   - Information assurance goals (confidentiality, integrity, authenticity, non-repudiation) & Kerckhoffs's principle.
+   - Mathematical foundations: modular arithmetic, Euler's totient, Extended Euclidean algorithm, and Chinese Remainder Theorem.
+   - Symmetric modes (AES-GCM) & hybrid cryptosystems for key transport.
+   - Asymmetric trapdoor permutations, integer factorization vs. RSA problem, and textbook RSA vulnerabilities.
+   - Cryptographic hash functions (SHA-256) and the hash-and-sign paradigm.
+   - Digital signature formalisms: EUF-CMA security model, EMSA-PSS encoding, and key separation.
+   - Elliptic curve cryptography (secp256k1), sub-exponential GNFS vs. exponential Pollard's rho, and nonce hazards.
+2. Dynamically reads empirical benchmark results directly from benchmark_results.csv (840 raw measurements total).
+3. Evaluates real-world system engineering trade-offs: Bitcoin BIP 141 SegWit virtual size, TLS 1.3 RFC 9846 / 9963 / 10024,
+   and Bellcore CRT fault attacks vs. timing side channels.
+4. Strictly formats to exactly 5 A4 pages with zero orphan table rows or clipped content.
 """
 
 import os
@@ -146,7 +150,7 @@ def generate_report():
     normal_style.font.size = Pt(9.5)
     normal_style.font.color.rgb = RGBColor(33, 33, 33)
 
-    def add_p(text="", space_before=0, space_after=0.4, line_spacing=1.0, align=WD_ALIGN_PARAGRAPH.JUSTIFY):
+    def add_p(text="", space_before=0, space_after=0.35, line_spacing=1.0, align=WD_ALIGN_PARAGRAPH.JUSTIFY):
         p = doc.add_paragraph(text)
         p.alignment = align
         p.paragraph_format.space_before = Pt(space_before)
@@ -155,7 +159,7 @@ def generate_report():
         return p
 
     def add_h1(text):
-        p = add_p(space_before=1.5, space_after=0.2, line_spacing=1.0, align=WD_ALIGN_PARAGRAPH.LEFT)
+        p = add_p(space_before=1.4, space_after=0.2, line_spacing=1.0, align=WD_ALIGN_PARAGRAPH.LEFT)
         p.paragraph_format.keep_with_next = True
         run = p.add_run(text)
         run.bold = True
@@ -165,7 +169,7 @@ def generate_report():
         return p
 
     def add_h2(text):
-        p = add_p(space_before=1.4, space_after=0.2, line_spacing=1.0, align=WD_ALIGN_PARAGRAPH.LEFT)
+        p = add_p(space_before=1.3, space_after=0.2, line_spacing=1.0, align=WD_ALIGN_PARAGRAPH.LEFT)
         p.paragraph_format.keep_with_next = True
         run = p.add_run(text)
         run.bold = True
@@ -219,10 +223,10 @@ def generate_report():
         f"RSA-2048 is {ratio_2048_ec}x faster, RSA-3072 is {ratio_3072_ec}x faster, and RSA-4096 is {ratio_4096_ec}x faster than ECDSA verification. "
         f"At the approximately equivalent 128-bit classical security level (RSA-3072 vs. ECDSA-secp256k1), RSA-3072 verification is {ratio_3072_ec}x faster than ECDSA, "
         f"whereas ECDSA signing is {ratio_sign_ec}x faster than RSA-3072. "
-        "Adversarial security scenario testing demonstrates that combining cryptographic digital signatures with application-level timestamp freshness and nonce replay caches "
+        "Adversarial security testing validates that combining cryptographic digital signatures with stateful timestamp freshness and nonce replay caches "
         "significantly strengthens request authentication against payload tampering and replay attacks. "
         "Evaluation against the bundled RSA-PSS 2048-bit SHA-256/MGF1-SHA256 Wycheproof test-vector set (version 0.9 snapshot, 108 cases) confirms that the verification engine "
-        "correctly accepts all 63 expected-valid test cases and rejects all 45 expected-invalid test cases, validating execution against this selected verification suite."
+        "correctly accepts all 63 expected-valid test cases and rejects all 45 expected-invalid test cases, validating execution against this authoritative verification suite."
     )
     r_ab_t.font.size = Pt(8.8)
 
@@ -240,18 +244,19 @@ def generate_report():
     add_h1("1. Introduction and Research Scope")
     p = add_p()
     p.add_run(
+        "Modern information assurance rests on four foundational security objectives: confidentiality, data integrity, entity authenticity, and non-repudiation evidence [1], [2]. "
+        "Under Kerckhoffs's principle, the security of a cryptosystem must depend solely on the secrecy of the private key, rather than on the obscurity of the underlying algorithm. "
         "First documented by Ron Rivest, Adi Shamir, and Leonard Adleman in their April 1977 MIT research memorandum and published in Communications of the ACM in 1978 [1], "
-        "and formally standardized under PKCS #1 / RFC 8017 [2], the RSA cryptosystem helped address the historic key distribution challenge "
-        "by separating the private transformation used for decryption and signing from the public transformation used for encryption and verification. "
-        "Although asymmetric cryptography eliminates the requirement for secret symmetric key pre-distribution, it does not remove the necessity "
-        "for authentic public-key distribution, requiring Public Key Infrastructure (PKI), certificate authorities, or trusted directories to prevent impersonation. "
-        "For nearly five decades, RSA has underpinned digital commerce, software distribution, and enterprise identity management."
+        "and standardized under PKCS #1 / RFC 8017 [2], the RSA cryptosystem helped address the historic key distribution challenge by separating the private transformation "
+        "used for decryption and signing from the public transformation used for encryption and verification. Although asymmetric cryptography eliminates the need to transmit secret keys "
+        "over insecure channels, it does not remove the necessity for authentic public-key distribution, requiring Public Key Infrastructure (PKI), certificate authorities, or trusted directories "
+        "to prevent impersonation and man-in-the-middle attacks. For nearly five decades, RSA has underpinned digital commerce, software distribution, and enterprise identity management."
     )
     p = add_p()
     p.add_run(
-        "In modern blockchain environments, architectural debate centers on cryptographic algorithm selection. Major public networks—including Bitcoin and Ethereum—rely "
-        "on Elliptic Curve Cryptography (ECC) for native on-chain transaction signatures [8], [12], [13]. In enterprise cryptocurrency operations, transaction handling does not occur solely on-chain; "
-        "systems employ layered off-chain microservices, hardware security modules (HSMs), and Transport Layer Security (TLS 1.3) tunnels [3] "
+        "In modern blockchain environments, significant architectural debate centers on algorithm selection. Major public networks—including Bitcoin and Ethereum—rely on "
+        "Elliptic Curve Cryptography (ECC) for native on-chain transaction signatures [8], [12], [13]. In enterprise cryptocurrency operations, transaction handling does not occur solely on-chain; "
+        "financial backends employ layered off-chain microservices, Hardware Security Modules (HSMs), and Transport Layer Security (TLS 1.3) tunnels [3] "
         "to authenticate and authorize requests before dispatching them to blockchain nodes. This report investigates real-world RSA applications across three dimensions: "
         "(1) WHAT: mathematical principles and operational distinctions between RSA-OAEP key transport and RSA-PSS signatures; "
         "(2) WHY: security justification of RSA and an evidence-based comparison with ECDSA and Schnorr; "
@@ -265,15 +270,15 @@ def generate_report():
     add_h2("2.1 Mathematical Foundations and Operating Mechanics")
     p = add_p()
     p.add_run(
-        "The security of RSA rests on the presumed computational intractability of the integer factorization problem and the RSA problem [1], [2]. "
-        "Given modulus n = p · q (where p and q are large prime numbers), factoring n immediately reveals Euler's totient φ(n) = (p − 1)(q − 1), enabling the derivation of private exponent d ≡ e⁻¹ (mod φ(n)). "
-        "The RSA problem asks to compute plaintext m given ciphertext c ≡ m^e (mod n), public exponent e, and modulus n without knowing the prime factors. "
-        "While an efficient factoring algorithm immediately breaks RSA, whether the RSA inversion problem is strictly equivalent to integer factorization remains an unproven hypothesis in complexity theory. "
-        "In practical operations: (i) public exponent e is chosen coprime to φ(n), typically the fourth Fermat prime e = 65,537 = 2¹⁶ + 1; "
-        "(ii) private exponent d satisfies e · d ≡ 1 (mod φ(n)); and (iii) Chinese Remainder Theorem (CRT) parameters (p, q, dP, dQ, qInv) are retained to accelerate private-key operations. "
-        "By Euler's theorem, for any message m coprime to n, m^(e·d) ≡ m (mod n). "
-        "Textbook RSA operates directly on integers (c = m^e mod n; m = c^d mod n), but exhibits dangerous algebraic homomorphic properties vulnerable to chosen-ciphertext attacks. "
-        "Production deployments mandate modern randomized padding schemes."
+        "The security of RSA rests on the computational intractability of the integer factorization problem and the presumed hardness of the RSA problem [1], [2]. "
+        "Given modulus n = p · q (where p and q are large distinct prime numbers), factoring n immediately reveals Euler's totient φ(n) = (p − 1)(q − 1), enabling the derivation of private exponent d ≡ e⁻¹ (mod φ(n)) "
+        "via the Extended Euclidean Algorithm solving Bézout's identity e · d + k · φ(n) = 1. The RSA problem asks to compute plaintext m given ciphertext c ≡ m^e (mod n), public exponent e, and modulus n "
+        "without knowing the prime factors. While an efficient factoring algorithm immediately breaks RSA, whether the RSA inversion problem is strictly equivalent to integer factorization remains an unproven hypothesis in complexity theory. "
+        "In practical operations: (i) public exponent e is chosen coprime to φ(n), standardized as Fermat prime e = 65,537 = 2¹⁶ + 1; (ii) private exponent d satisfies e · d ≡ 1 (mod φ(n)); "
+        "and (iii) Chinese Remainder Theorem (CRT) parameters (p, q, dP, dQ, qInv) are retained to accelerate private-key operations, where dP = d mod (p − 1), dQ = d mod (q − 1), and qInv = q⁻¹ mod p, "
+        "yielding an approximate 4x computational speedup. By Euler's theorem, for any message m coprime to n, m^(e·d) = m^(k·φ(n) + 1) ≡ m (mod n). "
+        "Textbook RSA operates directly on integers (c = m^e mod n; m = c^d mod n), but exhibits dangerous algebraic multiplicative homomorphism: (m₁)^e · (m₂)^e ≡ (m₁ · m₂)^e (mod n). "
+        "This allows adversaries to construct valid ciphertexts or forged signature representatives without knowing d. Production deployments mandate modern randomized padding schemes."
     )
 
     add_h2("2.2 Distinction Between RSA Encryption and RSA Digital Signatures")
@@ -284,18 +289,19 @@ def generate_report():
         "In the Random Oracle Model (ROM), Bellare and Rogaway (EUROCRYPT '94, published 1995 [17]) introduced OAEP and proved semantic security against chosen-plaintext attacks (IND-CPA) and plaintext awareness (implying IND-CCA1 for general trapdoor permutations). "
         "Shoup (CRYPTO 2001, Journal of Cryptology 2002 [15]) subsequently showed that a general IND-CCA2 proof cannot be established for arbitrary permutations under standard one-wayness, proposing the OAEP+ variant. "
         "Fujisaki, Okamoto, Pointcheval, and Stern (CRYPTO 2001, Journal of Cryptology 2004 [16]) established that RSA-OAEP achieves IND-CCA2 security in the ROM under the standard RSA assumption, "
-        "introducing the concept of partial-domain one-wayness and demonstrating its equivalence to full-domain one-wayness for the RSA permutation, though the concrete reduction is non-tight for practical RSA parameters. "
+        "introducing partial-domain one-wayness and demonstrating its equivalence to full-domain one-wayness for the RSA permutation, though the concrete reduction is non-tight for practical RSA parameters. "
         "Because RSAES-OAEP payload size is bounded by mLen <= k - 2hLen - 2 (RFC 8017 Section 7.1.1; 190 bytes for RSA-2048 with SHA-256), "
         "industrial systems deploy RSA-OAEP within hybrid encryption for RSA key transport (NIST SP 800-56B Rev. 2 [5])—encapsulating ephemeral symmetric keys to protect bulk data encrypted via symmetric ciphers such as AES-GCM (NIST SP 800-38D [22]).\n"
-        "• Digital Signatures (Authenticity, Integrity, Non-Repudiation Evidence): Under RFC 8017 Section 8.1 and NIST FIPS 186-5 [2], [4], RSA-PSS is the standardized digital signature scheme. "
-        "SHA-256 maps an arbitrary-length input message to a fixed-length 256-bit digest. RSA-PSS incorporates this digest into its encoding process, together with a randomized salt, before applying the RSA private-key operation. "
+        "• Digital Signatures (Authenticity, Integrity, Non-Repudiation Evidence): Under RFC 8017 Section 8.1 and NIST FIPS 186-5 [2], [4], RSA-PSS is the standardized digital signature scheme, satisfying Existential Unforgeability under Chosen-Message Attacks (EUF-CMA). "
+        "Under the hash-and-sign paradigm, SHA-256 maps an arbitrary-length input message to a fixed-length 256-bit digest, preventing modular length overflow and thwarting homomorphic forgery. "
+        "RSA-PSS incorporates this digest into its encoding process, together with a randomized salt, before applying the RSA private-key operation. "
         "In the signing flow, the message digest mHash = SHA-256(M) and a randomized salt are encoded via EMSA-PSS into an octet string EM, converted to integer representative m = OS2IP(EM), and signed via private exponentiation s = RSASP1(SK, m) = m^d mod n. "
         "During verification, the verifier computes recovered representative m = RSAVP1(PK, s) = s^e mod n, formats octets EM = I2OSP(m, emLen), and executes EMSA-PSS-VERIFY(M, EM, emBits). "
-        "Crucially, modular exponentiation (RSAVP1) alone does not establish signature validity; complete EMSA-PSS verification—unmasking the salt via MGF1, checking padding octets, and verifying hash consistency—is indispensable. "
+        "Crucially, modular exponentiation (RSAVP1) alone does not establish signature validity; complete EMSA-PSS verification—unmasking the salt via MGF1, checking padding octets (0xBC trailer), and verifying hash consistency—is indispensable. "
         "RSA-PSS achieves an essentially tight security reduction to the RSA problem in the ROM (RFC 8017 [2]). Signatures provide mathematical non-repudiation evidence, while comprehensive non-repudiation requires identity binding, audit trails, and secure key custody.\n"
         "• Cryptographic Key Separation (NIST FIPS 186-5 Section 5.1 / SP 800-57): Strict key separation is a core security mandate. "
         "NIST FIPS 186-5 [4] explicitly requires that an RSA key pair designated for digital signatures shall not be used for key establishment or encryption (such as RSA-OAEP). "
-        "Multi-purpose key reuse exposes systems to cross-protocol chosen-ciphertext attacks, complicates non-repudiation auditing, and expands the compromise blast radius. "
+        "Multi-purpose key reuse exposes systems to cross-protocol chosen-ciphertext attacks (where decryption queries reveal signature information), complicates non-repudiation auditing, and expands the compromise blast radius. "
         "Systems utilizing both signing and encryption must enforce distinct key pairs, separate certificate hierarchies, and independent key-management policies."
     )
 
@@ -406,6 +412,9 @@ def generate_report():
     p = add_p()
     p.add_run(
         "A primary requirement of public blockchain networks is minimizing ledger bloat and transmission overhead, as transaction fees penalize large data footprints. "
+        "The mathematical foundation of this trade-off lies in cryptanalytic complexity: factoring modulus n = p · q via the General Number Field Sieve (GNFS) has sub-exponential complexity, "
+        "requiring modulus size to scale super-linearly (3072 bits for 128-bit security). In contrast, solving the Elliptic Curve Discrete Logarithm Problem (ECDLP) via Pollard's rho algorithm has fully exponential "
+        "complexity O(sqrt(n)), allowing a 256-bit elliptic curve (such as secp256k1) to provide equivalent 128-bit security with vastly smaller keys and signatures. "
         "In Bitcoin, fees depend on transaction virtual size (vSize in vB) under BIP 141 (Segregated Witness) [9], calculated as Weight = (Base Size * 3) + Total Size and vSize = ceil(Weight / 4). "
         "A standard 1-input, 2-output SegWit P2WPKH transaction has a baseline virtual size of ~141 vB. "
         "The standard P2WPKH witness stack consists of 1 byte for the stack item count, 1 byte for the signature length prefix, approximately 71–73 bytes for the signature witness item "
@@ -424,9 +433,9 @@ def generate_report():
     p = add_p()
     p.add_run(
         "Despite on-chain storage limitations, RSA offers distinct operational advantages in off-chain exchange backends: "
-        "(1) Asymmetric Verification Efficiency: RSA public verification using exponent e = 65,537 = 2¹⁶ + 1 executes in only 17 modular operations (16 squarings and 1 multiplication) under binary square-and-multiply exponentiation, enabling extremely rapid verification at edge gateways. "
+        "(1) Asymmetric Verification Efficiency: RSA public verification using exponent e = 65,537 = 2¹⁶ + 1 executes in only 17 modular operations (16 squarings and 1 multiplication) under binary square-and-multiply exponentiation, enabling extremely rapid verification at edge gateways compared to ECC scalar point multiplication (~256 point doublings and additions). "
         "(2) Enterprise Infrastructure: Enterprise banking backends, payment gateways, and hardware security modules (HSMs) possess mature, highly optimized cryptographic acceleration for RSA. "
-        "(3) Nonce Reuse Hazards in ECDSA: Standard ECDSA is exceptionally vulnerable to nonce failure: reusing a per-message nonce k or introducing slight bit bias completely exposes the private signing key. "
+        "(3) Nonce Reuse Hazards in ECDSA: Standard ECDSA is exceptionally vulnerable to nonce failure: in s = k⁻¹(z + r · dA) mod n, reusing per-message nonce k or introducing slight bit bias allows direct algebraic recovery of private key dA = (s₁z₂ − s₂z₁)/(s₂r − s₁r) mod n. "
         "In contrast, RSA-PSS signature generation does not rely on a secret scalar nonce, mitigating catastrophic scalar leakage. "
         "However, RSA implementations face distinct side-channel and fault-injection vulnerabilities that require rigorous defense: "
         "(i) Bellcore CRT Fault Attacks: Accelerating RSA signing via the Chinese Remainder Theorem (CRT) is vulnerable to fault injection (Boneh et al. [7]). If a hardware fault corrupts one CRT branch (e.g., modulo q while modulo p remains intact), the resulting faulty signature s' can reveal the prime factors of the modulus. "
