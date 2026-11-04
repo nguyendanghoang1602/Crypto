@@ -32,7 +32,7 @@ This document records the comprehensive technical audit, targeted corrections, a
 | **ECDSA DER Sample Wording** | Accurately reflect single sampled measurement (`len(ec_signatures[0])`). | Updated wording to: "The recorded ECDSA DER signature sample was 71 bytes, with DER-encoded signatures generally varying between 70 and 72 bytes due to variable-length ASN.1 INTEGER encoding of $r$ and $s$." Avoided claiming an average where a sample was recorded. | **Verified** in Section 5.3, Table 1, Table 2, and README. |
 | **Atomic Replay Protection Boundary** | Clarify prototype vs. production concurrency boundaries. | Explicitly documented in Section 4.3 and Algorithm 1 that the prototype's in-memory Python set is an educational mechanism; production distributed deployments require strictly atomic check-and-insert logic (e.g., Redis SETNX or SQL unique constraint transactions) with TTL expiration across horizontal restarts. | **Verified** in Section 4.3, Algorithm 1, and README. |
 | **TLS 1.3 Standards (RFC 9846, 9963, 10024)** | Verify official RFC publication status and metadata. | Verified RFC 9846 (published July 2026, superseding RFC 8446). Verified RFC 9963 (April 2026 legacy client auth exception) and RFC 10024 (August 2026 PQ/T hybrid key agreement). Emphasized TLS 1.3 server authentication mandates RSA-PSS. | **Verified** in Reference [3], `Research_Sources.md`, and README. |
-| **Word Pagination & Layout Integrity** | Strict 5 A4 page maximum constraint; eliminate split across pages for Table 2 and Algorithm 1; disclose COM rendering engine. | Final layout parameters: Margins (1.45 cm top/bottom, 1.60 cm left/right), 9.5 pt font, 1.0 line spacing. Algorithm 1 is unified on Page 4 with `w:cantSplit` and `keep_together`. Table 1 is unified on Page 2. Table 2 is unified on Page 4. Figure 1 is on Page 2, Figure 2 is on Page 3, and Figure 3 is on Page 4. Page 5 contains empirical findings analysis, Section 6 (Conclusion), and all references (expanded to 17 references [1]–[17] in Round 5). Verified via COM automation to occupy **exactly 5 A4 pages** (Word count: 4,747 words in final deliverable). Explicitly disclosed that Kingsoft WPS Office 12.1.0.29162 serves as the active registered COM automation provider. | **Verified** via COM automation (`ComputeStatistics(2) == 5`). |
+| **Word Pagination & Layout Integrity** | Strict 5 A4 page maximum constraint; eliminate split across pages for Table 2 and Algorithm 1; disclose COM rendering engine. | Final layout parameters: Margins (1.45 cm top/bottom, 1.60 cm left/right), 9.5 pt font, 1.0 line spacing. Algorithm 1 is unified on Page 4 with `w:cantSplit` and `keep_together`. Table 1 is unified on Page 2. Table 2 is unified on Page 4. Figure 1 is on Page 2, Figure 2 is on Page 3, and Figure 3 is on Page 5. Page 5 contains empirical findings analysis, Section 6 (Conclusion), and all references (expanded to 17 references [1]–[17] in Round 5). Verified via COM automation to occupy **exactly 5 A4 pages** (Word count: 4,758 words in final release deliverable; superseded early draft measured 4,021 words, and Round 4 measured 4,747 words prior to OAEP attribution text refinement). Explicitly disclosed that Kingsoft WPS Office 12.1.0.29162 serves as the active registered COM automation provider. | **Verified** via COM automation (`ComputeStatistics(2) == 5`). |
 
 ---
 
@@ -63,13 +63,24 @@ This document records the comprehensive technical audit, targeted corrections, a
 - **Scenario 4 (Rogue Public Key):** Evaluated against unauthorized public key -> `REJECTED (Untrusted Public Key)`.
 - **Scenario 5 (Replay Attack):** Exact payload resubmitted -> Cryptographic signature passed (`True`), but duplicate nonce was intercepted -> `REJECTED BY APPLICATION STATE ENGINE`.
 
+### 2.4 Artifact Immutability & Reproduction Log Disclosure
+- **Immutable Protected Experimental Artifacts:**
+  - `03_Experimental_Data/raw_benchmark_logs/raw_trials_all_algorithms.csv`: 840 individual measurements, byte-for-byte identical to baseline.
+  - `03_Experimental_Data/benchmark_results.csv`: Aggregated benchmark statistics, byte-for-byte identical to baseline.
+  - `05_Research_References/Wycheproof_Test_Vector/rsa_pss_2048_sha256_mgf1_32_test.json`: Google Security Research v0.9 test vector suite (108 cases), byte-for-byte identical to baseline.
+  - `03_Experimental_Data/test_execution_logs/test_scenarios_and_benchmarks.log`: Full console execution transcript, byte-for-byte identical to baseline.
+- **Wycheproof Reproduction Execution Log Disclosure (`wycheproof_reproduction.log`):**
+  - When the verification test suite (`rsa_pss_experiment.py`) is executed to independently confirm test cases, it writes an execution log recording the run timestamp (line 4: `Timestamp: YYYY-MM-DD HH:MM:SS UTC`).
+  - While all 108 PASS result lines and the final 108/108 summary remain identical, the file content changes at the byte level due to this timestamp update.
+  - Consequently, `wycheproof_reproduction.log` is an actively generated reproduction log reflecting the latest verification run, distinct from the immutable benchmark datasets and official test vectors.
+
 ---
 
 ## 3. Deliverable Verification & Pagination Audit
 
 - **Document Path:** `01_Final_Report/RSA_Real_World_Applications_Report.docx`
 - **Rendered Page Count:** **Exactly 5 A4 pages** (verified via `win32com.client` `doc.ComputeStatistics(2) == 5`).
-- **Word Count:** 4,021 words across 61 paragraphs and 4 structured tables.
+- **Word Count:** 4,758 words across 144 paragraphs in the final release deliverable (superseding the initial 4,021-word baseline draft).
 - **Visual Artifacts:** 3 embedded diagrams (Figure 1 RSA-PSS workflow, Figure 2 Gateway architecture, Figure 3 Median latency comparison).
 - **Structural Integrity:**
   - Page 1: Title, metadata, Abstract box, Keywords, Section 1, Section 2.1, Section 2.2.
@@ -161,7 +172,7 @@ During the final technical polishing round (November 2026), six targeted cryptog
 8. **Word Layout & Pagination Verification:**
    - *Rendering Engine:* Kingsoft WPS Office 12.1.0.29162 (active COM provider for `Word.Application`).
    - *Status:* **Exactly 5 A4 pages** (verified via `doc.ComputeStatistics(2) == 5`).
-   - *Layout Integrity:* Algorithm 1 is unified on Page 4 (`w:cantSplit`, `keep_together`). Table 1 is unified on Page 2. Table 2 is unified on Page 4. Figure 1 on Page 2, Figure 2 on Page 3, Figure 3 on Page 4. All references conclude cleanly on Page 5 (expanded to [1]–[17] in Round 5).
+   - *Layout Integrity:* Algorithm 1 is unified on Page 4 (`w:cantSplit`, `keep_together`). Table 1 is unified on Page 2. Table 2 is unified on Page 4. Figure 1 on Page 2, Figure 2 on Page 3, and Figure 3 on Page 5. All references conclude cleanly on Page 5 (expanded to [1]–[17] in Round 5).
 
 
 ---
@@ -235,4 +246,7 @@ In November 2026, a final academic accuracy and documentation consistency review
 6. **Word Document Pagination & Margin Safety Verification:**
    - *Rendering Engine:* Kingsoft WPS Office (Version 12.0, Build 12.1.0.29162; active registered COM provider for `Word.Application`).
    - *Rendered Pages:* **Strictly 5 A4 pages** (`doc.ComputeStatistics(2) == 5`; word count: 4,758 words).
-   - *Vertical Clearance:* Fine-tuned Figure 3 width (2.25 in) and spacing in Section 6/7. The final paragraph (Reference [17]) concludes at vertical position 773.25 pt on Page 5, providing 26.75 pt of safety margin clearance before the 800 pt printable page limit.
+   - *Vertical Clearance Calculation & Measurement:* Verified via Word COM automation on A4 page geometry ($297\text{ mm} \times 210\text{ mm}$; PageHeight: 841.90 pt, TopMargin: 41.10 pt, BottomMargin: 41.10 pt / 1.45 cm). The actual printable page boundary ($PageHeight - BottomMargin$) is **800.80 pt**. The final paragraph (Reference [17]) concludes at vertical position **773.25 pt** on Page 5. The exact safety clearance to the bottom margin is $800.80\text{ pt} - 773.25\text{ pt} = \mathbf{27.55\text{ pt}}$ (and 26.75 pt when measured against the nominal 800.0 pt printable limit), providing robust vertical safety margin against cross-rasterizer overflow.
+
+7. **Wycheproof Reproduction Execution Log Disclosure:**
+   - *Status:* Documented that while the primary experimental datasets (`raw_trials_all_algorithms.csv`, `benchmark_results.csv`, `rsa_pss_2048_sha256_mgf1_32_test.json`, and `test_scenarios_and_benchmarks.log`) remain strictly immutable and byte-for-byte identical to baseline, `03_Experimental_Data/test_execution_logs/wycheproof_reproduction.log` is an actively generated reproduction log. When `rsa_pss_experiment.py` executes, it records the current execution timestamp on line 4 (`Timestamp: YYYY-MM-DD HH:MM:SS UTC`). While all 108 PASS lines and the 108/108 summary are identical, the file content changes at the byte level due to this timestamp update. The release manifest (`SHA256SUMS.txt`) correctly reflects the active hash of this reproduction run.
