@@ -1,0 +1,39 @@
+================================================================================
+ACADEMIC EXPERIMENTAL EXECUTION ENVIRONMENT
+================================================================================
+
+1. HARDWARE SPECIFICATION
+--------------------------------------------------------------------------------
+- Processor (CPU)      : AMD Ryzen 5 7520U with Radeon Graphics
+- Physical Cores       : 4 Cores
+- Logical Threads      : 8 Threads
+- Clock Speed          : 2.80 GHz (Base)
+- Instruction Sets     : x86-64, AVX2, AES-NI, SHA-NI
+- Memory (RAM)         : 16.0 GB LPDDR5
+
+2. OPERATING SYSTEM
+--------------------------------------------------------------------------------
+- Operating System     : Microsoft Windows 11 Home / Pro
+- OS Version & Build   : 10.0.26200 (Build 26200, SP0)
+- System Architecture  : 64-bit operating system, x64-based processor
+
+3. SOFTWARE RUNTIME & CRYPTOGRAPHIC LIBRARIES
+--------------------------------------------------------------------------------
+- Python Version       : Python 3.15.1 (tags/v3.15.1:c37e74c, Oct 21 2026, 06:24:08)
+- Python Compiler      : MSC v.1951 64 bit (AMD64)
+- Cryptography Library : cryptography v50.0.2
+- OpenSSL Backend      : OpenSSL 4.0.3 (29 Sep 2026)
+- Document Engine      : python-docx v1.2.0
+- Plotting Engine      : matplotlib v3.11.2 (backend: Agg)
+- Linear Algebra       : numpy v2.5.4
+
+4. BENCHMARK MEASUREMENT PARAMETERS
+--------------------------------------------------------------------------------
+- High-Resolution Timer: time.perf_counter_ns() (resolution: ~1 ns)
+- Key Generation Trials: 10 independent trials per algorithm
+- Signing Trials       : 100 independent trials per algorithm
+- Verification Trials  : 100 independent trials per algorithm
+- Statistical Metric   : Median (to mitigate OS thread-scheduling outliers)
+- Algorithms Evaluated : RSA-2048, RSA-3072, RSA-4096, ECDSA (secp256k1)
+================================================================================
+

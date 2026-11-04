@@ -1,0 +1,5 @@
+algorithm,key_size_bits,security_strength_bits,nist_reference,keygen_median_ms,keygen_mean_ms,keygen_std_ms,keygen_min_ms,keygen_max_ms,sign_median_ms,sign_mean_ms,sign_std_ms,sign_min_ms,sign_max_ms,verify_median_ms,verify_mean_ms,verify_std_ms,verify_min_ms,verify_max_ms,signature_length_bytes,modulus_length_bytes,internal_asymmetry_ratio,trials_keygen,trials_crypto
+RSA-2048,2048,112,"NIST SP 800-56B Rev. 2, Table 2 & App. D",50.0708,54.4966,23.6848,25.9959,93.1998,0.9005,0.9994,0.2433,0.8814,2.3098,0.0462,0.0473,0.0049,0.0456,0.089,256,256,19.49,10,100
+RSA-3072,3072,128,"NIST SP 800-56B Rev. 2, Table 2 & App. D",253.9132,266.9966,171.446,61.7732,643.3839,2.7834,3.4376,4.2698,2.6255,45.3585,0.0756,0.0861,0.022,0.0743,0.1899,384,384,36.82,10,100
+RSA-4096,4096,152,"NIST SP 800-56B Rev. 2, Table 2 & App. D",633.0616,689.0746,376.5271,216.1014,1496.1944,6.5425,6.6763,0.7277,5.9242,9.6458,0.115,0.1209,0.0253,0.1137,0.3506,512,512,56.89,10,100
+ECDSA-secp256k1,256,128,"NIST SP 800-57 Part 1 Rev. 5, Table 2",0.7158,0.8997,0.4176,0.6977,1.9854,0.7196,0.7504,0.101,0.7063,1.5762,0.6214,0.6704,0.1462,0.5969,1.5971,71,33,1.16,10,100
