@@ -87,7 +87,7 @@ This document catalogs the primary standards, technical specifications, and offi
 - **Series & Number:** BIP 141
 - **Publication Date:** December 2015
 - **Official URL:** https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki
-- **Usage in Report:** Cited in Section 3.1 to rigorously explain transaction weight ($\text{Weight} = (\text{Base} \times 3) + \text{Total}$) and virtual size ($\text{vSize} = \lceil \text{Weight} / 4 \rceil$), demonstrating how hypothetical RSA transaction signatures carrying both modulus and signature in each input would add $\approx 407$ witness bytes ($\approx 102\text{ vB}$) per input, expanding virtual transaction size by approximately $72\%$ for a standard 1-input, 2-output P2WPKH transaction (~141 vB baseline). Also notes that public-key caching or off-chain key registries would substantially reduce this overhead.
+- **Usage in Report:** Cited in Section 3.1 to rigorously explain transaction weight ($\text{Weight} = (\text{Base} \times 3) + \text{Total}$) and virtual size ($\text{vSize} = \lceil \text{Weight} / 4 \rceil$). A typical P2WPKH witness stack totals approximately $107\text{–}109\text{ bytes}$ (1-byte stack item count, 1-byte signature length prefix, $\sim 71\text{–}73\text{ byte}$ DER signature plus sighash, 1-byte public key length prefix, and 33-byte compressed public key). For a hypothetical RSA-2048 witness carrying two separate stack items (256-byte modulus and 256-byte signature, each with a 3-byte CompactSize prefix), the witness size equals $1 + 3 + 256 + 3 + 256 = 519\text{ bytes}$, adding approximately $410\text{–}412\text{ witness bytes}$ per input ($\approx 103\text{ additional virtual bytes}$, subject to transaction weight rounding). For a representative 141-vB baseline transaction, this hypothetical expansion is approximately $73\%$. The report explicitly notes that this is a hypothetical format, native Bitcoin RSA verification is not supported, the model assumes both values are carried in each input, and alternative key-storage designs would substantially alter the overhead.
 
 ---
 
@@ -107,7 +107,7 @@ This document catalogs the primary standards, technical specifications, and offi
 - **Authors / Organization:** Bitcoin Core Developers
 - **Publication Year:** n.d. [Online; accessed 2026]
 - **Official URL:** https://developer.bitcoin.org/devguide/transactions.html
-- **Usage in Report:** Cited in Section 3.1 regarding standard P2WPKH transaction serialization, witness structure (~105 bytes witness), and consensus overhead.
+- **Usage in Report:** Cited in Section 3.1 regarding standard P2WPKH transaction serialization, typical witness stack composition (~107–109 bytes: 1-byte count, 1-byte signature length, ~71–73 byte DER signature + sighash, 1-byte pubkey length, 33-byte compressed pubkey), and consensus overhead.
 
 ---
 

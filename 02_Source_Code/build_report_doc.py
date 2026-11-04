@@ -153,7 +153,7 @@ def generate_report():
         return p
 
     def add_h1(text):
-        p = add_p(space_before=3.5, space_after=0.6, line_spacing=1.03, align=WD_ALIGN_PARAGRAPH.LEFT)
+        p = add_p(space_before=2.8, space_after=0.4, line_spacing=1.02, align=WD_ALIGN_PARAGRAPH.LEFT)
         p.paragraph_format.keep_with_next = True
         run = p.add_run(text)
         run.bold = True
@@ -163,7 +163,7 @@ def generate_report():
         return p
 
     def add_h2(text):
-        p = add_p(space_before=2.2, space_after=0.5, line_spacing=1.03, align=WD_ALIGN_PARAGRAPH.LEFT)
+        p = add_p(space_before=1.6, space_after=0.3, line_spacing=1.02, align=WD_ALIGN_PARAGRAPH.LEFT)
         p.paragraph_format.keep_with_next = True
         run = p.add_run(text)
         run.bold = True
@@ -382,16 +382,19 @@ def generate_report():
         "In both networks, compact cryptographic signatures and public keys are paramount for node throughput and decentralized state validation. "
         "To evaluate transaction overhead accurately under Bitcoin BIP 141 (Segregated Witness) [8], transaction weight is formulated as "
         "Weight = (Base Size * 3) + Total Size, and virtual size is vSize = ceil(Weight / 4). "
-        "A standard 1-input, 2-output SegWit P2WPKH transaction has a baseline virtual size of ~141 vB (~210–220 serialized bytes), "
-        "where the witness (compressed 33-byte public key and variable ~71–73 byte DER signature with sighash) comprises roughly 105 bytes [10]. "
-        "In a hypothetical architecture where RSA-2048 were used for native transaction authorization, assuming that each transaction input must carry both "
-        "the 256-byte RSA public key modulus and the 256-byte RSA signature in its witness stack (totaling 512 witness bytes per input vs. ~105 bytes for standard P2WPKH), "
-        "this adds approximately 407 witness bytes per input. Because witness bytes are discounted by 4 in BIP 141 weight calculation, "
-        "this adds ~407 weight units, or approximately 102 virtual bytes (vB) per input. "
-        "For a representative 1-input, 2-output P2WPKH transaction (~141 vB), adding ~102 vB expands virtual size by approximately 72% (to ~243 vB), proportionally increasing miner fees. "
-        "Crucially, this ~102 vB overhead applies under the assumption that the full public modulus is carried in every input's witness; "
-        "if public keys were stored or referenced elsewhere (such as in an on-chain key directory, smart-contract registry, or script hash), "
-        "the per-transaction witness overhead would be substantially lower. "
+        "A standard 1-input, 2-output SegWit P2WPKH transaction has a baseline virtual size of ~141 vB (~210–220 serialized bytes). "
+        "For a typical P2WPKH witness stack—comprising 1 byte for stack item count, 1 byte for signature length prefix, ~71–73 bytes for the DER signature plus sighash byte, "
+        "1 byte for public key length prefix, and 33 bytes for the compressed public key—the witness totals approximately 107–109 bytes [10]. "
+        "In a hypothetical architecture where RSA-2048 were used for native transaction authorization, explicitly assuming two separate stack items "
+        "(a 256-byte RSA modulus and a 256-byte RSA signature, each prefixed by a 3-byte CompactSize length prefix for 256-byte items), "
+        "the witness size equals 1 + 3 + 256 + 3 + 256 = 519 bytes. Compared with standard P2WPKH, this adds approximately 410–412 witness bytes per input. "
+        "Under BIP 141 weight rules, this witness overhead adds 410–412 weight units, which corresponds to approximately 103 additional virtual bytes "
+        "(~103 vB per input, subject to transaction weight rounding). For a representative baseline 141-vB transaction, this hypothetical expansion is "
+        "approximately 73% (expanding to ~244 vB), proportionally increasing miner fees. "
+        "Crucially, this analysis models a hypothetical transaction format; native Bitcoin RSA verification is not currently supported "
+        "(Bitcoin script lacks native RSA verification opcodes, requiring consensus hard or soft forks), and the 73% expansion assumes both RSA values "
+        "are carried in each input. Alternative key-storage designs—such as registering public keys in an on-chain key directory, smart-contract registry, "
+        "or referencing them via script hashes—would substantially alter and reduce this overhead. "
         "Furthermore, Bitcoin script lacks native RSA verification opcodes; supporting RSA natively on-chain would require consensus protocol hard or soft forks. "
         "Similarly, native Ethereum Externally Owned Account (EOA) transaction authorization mandates ECDSA over secp256k1 [11]. "
         "In network-level transaction envelopes (legacy, EIP-2930, and EIP-1559), Ethereum serializes signatures as discrete Recursive Length Prefix (RLP) fields "
@@ -416,8 +419,10 @@ def generate_report():
         "the private key is algebraically exposed. While RSA-PSS eliminates scalar nonce leakage, it does not remove all side-channel risks: "
         "implementations must employ base blinding (randomizing the base integer with a secret factor r prior to modular exponentiation: x' = x · r^e mod n) "
         "to mitigate timing side-channel attacks. Crucially, blinding alone does not prevent hardware fault injection such as the Bellcore attack on Chinese Remainder "
-        "Theorem (CRT) implementations (where an induced fault during one prime exponentiation yields gcd(s - s', n) = p); defending against CRT fault attacks "
-        "requires separate countermeasures, such as post-computation signature verification (confirming s^e mod n == m before releasing the signature) or redundant fault-detection hardware."
+        "Theorem (CRT) implementations (where an induced fault during one prime exponentiation yields gcd(s − s′, n) ∈ {p, q}, revealing a nontrivial factor "
+        "of n = p × q depending on which CRT branch remains correct, with s denoting the correct signature and s′ denoting the faulty signature); defending against "
+        "CRT fault attacks requires separate countermeasures, such as post-computation signature verification (confirming s^e mod n == m before releasing the signature) "
+        "or redundant fault-detection hardware."
     )
 
     # -------------------------------------------------------------
@@ -444,18 +449,20 @@ def generate_report():
     # Figure 2: Architecture Diagram
     arch_img = FIG_DIR / "withdrawal_architecture.png"
     if arch_img.exists():
-        p_img = add_p(space_before=1.0, space_after=0.6, align=WD_ALIGN_PARAGRAPH.CENTER)
+        p_img = add_p(space_before=0.8, space_after=0.4, align=WD_ALIGN_PARAGRAPH.CENTER)
         p_img.paragraph_format.keep_with_next = True
         r_img = p_img.add_run()
-        r_img.add_picture(str(arch_img), width=Inches(3.95))
-        p_cap = add_p(space_before=0.6, space_after=1.8, align=WD_ALIGN_PARAGRAPH.CENTER)
+        r_img.add_picture(str(arch_img), width=Inches(3.35))
+        p_cap = add_p(space_before=0.4, space_after=1.2, align=WD_ALIGN_PARAGRAPH.CENTER)
         p_cap.paragraph_format.keep_with_next = True
         r_cap = p_cap.add_run("Figure 2. Proposed off-chain cryptocurrency withdrawal authentication architecture using RSA-PSS.")
         r_cap.font.size = Pt(8)
         r_cap.italic = True
 
+    # Move Section 4.2 and Algorithm 1 together to Page 4
+    doc.add_page_break()
     add_h2("4.2 Deterministic JSON Serialization and Pipeline Algorithm")
-    p = add_p()
+    p = add_p(space_before=0, space_after=0.4, line_spacing=1.01)
     p.add_run(
         "Cryptographic signature verification fails if distributed microservices serialize JSON keys or whitespace inconsistently. "
         "Our system implements deterministic JSON serialization (sorting dictionary keys lexicographically, eliminating whitespace, and encoding to UTF-8). "
@@ -463,17 +470,20 @@ def generate_report():
         "it provides deterministic byte-level consistency for the defined data schema. Algorithm 1 details the complete lifecycle."
     )
 
-    # Algorithm 1 Box
+    # Algorithm 1 Box (Kept intact with cantSplit and keep_together)
     tbl_code = doc.add_table(rows=1, cols=1)
     tbl_code.alignment = WD_TABLE_ALIGNMENT.CENTER
+    trPr = tbl_code.rows[0]._tr.get_or_add_trPr()
+    trPr.append(parse_xml(f'<w:cantSplit {nsdecls("w")}/>'))
     cell_code = tbl_code.cell(0, 0)
     set_cell_background(cell_code, "F8F9FA")
-    set_cell_margins(cell_code, top=30, bottom=30, left=50, right=50)
+    set_cell_margins(cell_code, top=14, bottom=14, left=35, right=35)
     p_code = cell_code.paragraphs[0]
     p_code.alignment = WD_ALIGN_PARAGRAPH.LEFT
     p_code.paragraph_format.space_before = Pt(0)
     p_code.paragraph_format.space_after = Pt(0)
-    p_code.paragraph_format.line_spacing = 1.03
+    p_code.paragraph_format.line_spacing = 1.01
+    p_code.paragraph_format.keep_together = True
     r_code = p_code.add_run(
         "Algorithm 1: Off-Chain Withdrawal Authentication Pipeline\n"
         "Input:  Request R = {id, net, addr, amt_atomic, nonce, ts}, Private Key SK_rsa, Public Key PK_rsa\n"
@@ -488,10 +498,10 @@ def generate_report():
         "8:  NonceStore.Add(R.nonce); return ACCEPT"
     )
     r_code.font.name = 'Consolas'
-    r_code.font.size = Pt(7.6)
+    r_code.font.size = Pt(7.2)
 
     add_h2("4.3 Prototype Scope and Vital Security Considerations")
-    p = add_p()
+    p = add_p(space_before=0, space_after=0.4, line_spacing=1.01)
     p.add_run(
         "To maintain academic defensibility, the prototype implementation scope must be clearly delineated from production requirements:\n"
         "1. In-Memory Demonstration vs. Distributed Persistence: The prototype stores processed nonces in an in-memory Python set. "
@@ -505,7 +515,7 @@ def generate_report():
     # SECTION 5: EXPERIMENTAL RESULTS AND ANALYSIS
     # -------------------------------------------------------------
     add_h1("5. Experimental Results and Analysis")
-    p = add_p()
+    p = add_p(space_before=0, space_after=0.4, line_spacing=1.01)
     p.add_run(
         "The system was implemented in Python 3.15 using the cryptography library (v50.0.2) backed by OpenSSL 4.0.3. "
         "Experiments were executed on an AMD Ryzen 5 7520U processor (4 cores, 8 threads @ 2.80 GHz) running Windows 11 Build 26200. "
@@ -514,7 +524,7 @@ def generate_report():
     )
 
     add_h2("5.1 Adversarial Security Testing Scenarios")
-    p = add_p()
+    p = add_p(space_before=0, space_after=0.4, line_spacing=1.01)
     p.add_run(
         "Execution of rsa_pss_experiment.py validated all five target security scenarios:\n"
         "• Scenario 1 (Valid Request): Authentic request (12.5 ETH in atomic units) verified and validated -> Outcome: ACCEPTED.\n"
@@ -526,7 +536,7 @@ def generate_report():
     )
 
     add_h2("5.2 Expanded Wycheproof Test Suite Validation")
-    p = add_p()
+    p = add_p(space_before=0, space_after=0.4, line_spacing=1.01)
     p.add_run(
         "To evaluate implementation compliance against authoritative test vectors, our test harness loaded and executed the complete "
         "Google Project Wycheproof test suite (rsa_pss_2048_sha256_mgf1_32_test.json) [12]. "
@@ -537,28 +547,38 @@ def generate_report():
     )
 
     add_h2("5.3 Empirical Benchmarking and Performance Analysis")
-    p = add_p()
+    p = add_p(space_before=0, space_after=0.4, line_spacing=1.01)
     p.add_run(
         "Table 2 reports empirical benchmarks comparing RSA configurations with ECDSA (secp256k1). Figure 3 illustrates the latency distributions."
     )
+
+    # Table 2 Caption (Standard academic placement directly above table)
+    p_b_cap = add_p(space_before=0.4, space_after=0.4, align=WD_ALIGN_PARAGRAPH.CENTER)
+    p_b_cap.paragraph_format.keep_with_next = True
+    r_bc = p_b_cap.add_run("Table 2. Empirical benchmark measurements (AMD Ryzen 5 7520U, Python 3.15, OpenSSL 4.0.3, median of 10 keygen / 100 crypto trials).")
+    r_bc.font.size = Pt(7.6)
+    r_bc.italic = True
 
     # TABLE 2: BENCHMARK RESULTS (LOADED DIRECTLY FROM ACTIVE CSV)
     tbl_bench = doc.add_table(rows=5, cols=7)
     tbl_bench.alignment = WD_TABLE_ALIGNMENT.CENTER
     set_table_borders(tbl_bench)
+    for row_obj in tbl_bench.rows:
+        trPr = row_obj._tr.get_or_add_trPr()
+        trPr.append(parse_xml(f'<w:cantSplit {nsdecls("w")}/>'))
 
     b_headers = ["Algorithm", "NIST Security", "Keygen Median", "Sign Median", "Verify Median", "Sig Size", "Internal Asymmetry"]
     for j, h in enumerate(b_headers):
         cell = tbl_bench.cell(0, j)
         set_cell_background(cell, "E8EAF6")
-        set_cell_margins(cell, top=16, bottom=16, left=25, right=25)
+        set_cell_margins(cell, top=8, bottom=8, left=16, right=16)
         p_c = cell.paragraphs[0]
         p_c.alignment = WD_ALIGN_PARAGRAPH.CENTER
         p_c.paragraph_format.space_before = Pt(0)
         p_c.paragraph_format.space_after = Pt(0)
         r = p_c.add_run(h)
         r.bold = True
-        r.font.size = Pt(7.8)
+        r.font.size = Pt(7.5)
 
     bench_rows = [
         ["RSA-2048", f"{r2048['security_strength_bits']} bits [4]", f"{r2048['keygen_median_ms']} ms", f"{r2048['sign_median_ms']} ms", f"{r2048['verify_median_ms']} ms", f"{r2048['signature_length_bytes']} B", f"{r2048['internal_asymmetry_ratio']}x (Sign / Verify)"],
@@ -572,34 +592,28 @@ def generate_report():
             cell = tbl_bench.cell(i+1, j)
             if i % 2 == 1:
                 set_cell_background(cell, "F9FAFB")
-            set_cell_margins(cell, top=14, bottom=14, left=25, right=25)
+            set_cell_margins(cell, top=6, bottom=6, left=16, right=16)
             p_c = cell.paragraphs[0]
             p_c.alignment = WD_ALIGN_PARAGRAPH.CENTER
             p_c.paragraph_format.space_before = Pt(0)
             p_c.paragraph_format.space_after = Pt(0)
             r = p_c.add_run(val)
-            r.font.size = Pt(7.6)
-
-    p_b_cap = add_p(space_before=0.8, space_after=1.2, align=WD_ALIGN_PARAGRAPH.CENTER)
-    p_b_cap.paragraph_format.keep_with_next = True
-    r_bc = p_b_cap.add_run("Table 2. Empirical benchmark measurements (AMD Ryzen 5 7520U, Python 3.15, OpenSSL 4.0.3, median of 10 keygen / 100 crypto trials).")
-    r_bc.font.size = Pt(8)
-    r_bc.italic = True
+            r.font.size = Pt(7.3)
 
     # Figure 3: Benchmark Chart
     bench_img = FIG_DIR / "benchmark_performance.png"
     if bench_img.exists():
-        p_img = add_p(space_before=0.8, space_after=0.4, align=WD_ALIGN_PARAGRAPH.CENTER)
+        p_img = add_p(space_before=0.5, space_after=0.2, align=WD_ALIGN_PARAGRAPH.CENTER)
         p_img.paragraph_format.keep_with_next = True
         r_img = p_img.add_run()
-        r_img.add_picture(str(bench_img), width=Inches(3.5))
-        p_cap = add_p(space_before=0.4, space_after=1.2, align=WD_ALIGN_PARAGRAPH.CENTER)
+        r_img.add_picture(str(bench_img), width=Inches(3.0))
+        p_cap = add_p(space_before=0.2, space_after=0.6, align=WD_ALIGN_PARAGRAPH.CENTER)
         p_cap.paragraph_format.keep_with_next = True
         r_cap = p_cap.add_run("Figure 3. Empirical latency distributions for RSA and ECDSA key generation, signing, and verification.")
         r_cap.font.size = Pt(8)
         r_cap.italic = True
 
-    p = add_p(space_before=0, space_after=0.8, line_spacing=1.01)
+    p = add_p(space_before=0, space_after=0.5, line_spacing=1.01)
     p.add_run(
         "The empirical measurements demonstrate three decisive performance characteristics:\n"
         f"1. RSA Asymmetric Cost Structure: RSA displays a pronounced internal asymmetry: verification is {r2048['internal_asymmetry_ratio']}x (RSA-2048) to {r4096['internal_asymmetry_ratio']}x (RSA-4096) faster than its own signing operation. "
@@ -614,7 +628,7 @@ def generate_report():
     # -------------------------------------------------------------
     # SECTION 6: CONCLUSION
     # -------------------------------------------------------------
-    p_h6 = add_p(space_before=2.5, space_after=0.5, line_spacing=1.02, align=WD_ALIGN_PARAGRAPH.LEFT)
+    p_h6 = add_p(space_before=1.8, space_after=0.4, line_spacing=1.02, align=WD_ALIGN_PARAGRAPH.LEFT)
     p_h6.paragraph_format.keep_with_next = True
     r_h6 = p_h6.add_run("6. Conclusion")
     r_h6.bold = True
@@ -622,7 +636,7 @@ def generate_report():
     r_h6.font.size = Pt(11.0)
     r_h6.font.color.rgb = RGBColor(26, 35, 126)
 
-    p = add_p(space_before=0, space_after=0.8, line_spacing=1.01)
+    p = add_p(space_before=0, space_after=0.5, line_spacing=1.01)
     p.add_run(
         "This research examined the cryptographic foundations, operational trade-offs, and practical deployment of RSA in modern security architectures. "
         "While elliptic-curve cryptography (ECDSA and Schnorr) rightfully dominates public blockchain consensus layers due to compact public keys and signatures that "
@@ -634,7 +648,7 @@ def generate_report():
         "However, cryptographic digital signatures alone do not guarantee complete system security; robust authorization requires defense-in-depth across deterministic serialization, "
         "stateful replay prevention, secure key custody (such as HSM storage), and transport encryption (TLS 1.3)."
     )
-    p = add_p(space_before=0, space_after=0.8, line_spacing=1.01)
+    p = add_p(space_before=0, space_after=0.5, line_spacing=1.01)
     p.add_run(
         "At an approximately equivalent 128-bit classical security strength, RSA-3072 provides robust resistance against conventional mathematical cryptanalysis, "
         "though it incurs substantially larger key and signature footprints than 256-bit elliptic curves. "
@@ -647,7 +661,7 @@ def generate_report():
     # -------------------------------------------------------------
     # SECTION 7: REFERENCES
     # -------------------------------------------------------------
-    p_h7 = add_p(space_before=2.0, space_after=0.4, line_spacing=1.02, align=WD_ALIGN_PARAGRAPH.LEFT)
+    p_h7 = add_p(space_before=1.5, space_after=0.3, line_spacing=1.02, align=WD_ALIGN_PARAGRAPH.LEFT)
     p_h7.paragraph_format.keep_with_next = True
     r_h7 = p_h7.add_run("7. References")
     r_h7.bold = True
@@ -671,7 +685,7 @@ def generate_report():
     ]
 
     for ref in refs:
-        p_ref = add_p(space_before=0, space_after=0.3, line_spacing=1.0, align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+        p_ref = add_p(space_before=0, space_after=0.2, line_spacing=1.0, align=WD_ALIGN_PARAGRAPH.JUSTIFY)
         p_ref.paragraph_format.left_indent = Inches(0.18)
         p_ref.paragraph_format.first_line_indent = Inches(-0.18)
         r_ref = p_ref.add_run(ref)
