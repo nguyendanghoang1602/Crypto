@@ -277,9 +277,9 @@ def generate_report():
     p.add_run(
         "RSA supports two distinct operational primitives designed for contrasting security goals:\n"
         "• Asymmetric Encryption (Confidentiality): The sender encrypts plaintext using recipient public key (e, n); only private key d can decrypt. "
-        "Modern systems employ RSA-OAEP (RFC 8017 Section 7.1 [2]). In the Random Oracle Model (ROM), Bellare and Rogaway (1994) introduced OAEP and established the original IND-CCA1 security result for general trapdoor permutations. "
-        "Subsequently, Shoup (2001) [15] demonstrated that the general IND-CCA2 proof could not be established for arbitrary trapdoor permutations via standard black-box reductions, and identified the significance of partial-domain one-wayness (proposing OAEP+). "
-        "Fujisaki, Okamoto, Pointcheval, and Stern (2001) [16] resolved the security of RSA-OAEP, proving IND-CCA2 security in the ROM under the standard RSA one-wayness assumption by demonstrating that partial-domain one-wayness is equivalent to full-domain one-wayness for the RSA permutation, though the concrete reduction is non-tight for practical key sizes. "
+        "Modern systems employ RSA-OAEP (RFC 8017 Section 7.1 [2]). In the Random Oracle Model (ROM), Bellare and Rogaway (1994) [17] introduced OAEP and established semantic security against chosen-plaintext attacks (IND-CPA) and plaintext awareness (implying IND-CCA1 security for general trapdoor permutations). "
+        "Subsequently, Shoup (2001) [15] demonstrated that the general IND-CCA2 security proof claim could not be established for arbitrary trapdoor permutations via standard black-box reductions, identified the critical relevance of partial-domain one-wayness, and proposed the provably secure variant OAEP+. "
+        "Fujisaki, Okamoto, Pointcheval, and Stern (2001) [16] established IND-CCA2 security specifically for RSA-OAEP in the ROM under the standard RSA one-wayness assumption by proving that partial-domain one-wayness is mathematically equivalent to full-domain one-wayness for the RSA permutation, though the concrete security reduction is non-tight for practical RSA key lengths. "
         "Because RSAES-OAEP payload size is bounded by mLen <= k - 2hLen - 2 (RFC 8017 Section 7.1.1; 190 bytes for RSA-2048 with SHA-256), "
         "industrial architectures deploy it within hybrid encryption for RSA key transport—encapsulating ephemeral symmetric keys (e.g., 256-bit AES-GCM per NIST SP 800-56B Rev. 2 [5]) "
         "to secure high-throughput bulk data streaming.\n"
@@ -630,8 +630,8 @@ def generate_report():
         p_img = add_p(space_before=0.4, space_after=0.2, align=WD_ALIGN_PARAGRAPH.CENTER)
         p_img.paragraph_format.keep_with_next = True
         r_img = p_img.add_run()
-        r_img.add_picture(str(bench_img), width=Inches(2.65))
-        p_cap = add_p(space_before=0.2, space_after=0.5, align=WD_ALIGN_PARAGRAPH.CENTER)
+        r_img.add_picture(str(bench_img), width=Inches(2.25))
+        p_cap = add_p(space_before=0.2, space_after=0.3, align=WD_ALIGN_PARAGRAPH.CENTER)
         p_cap.paragraph_format.keep_with_next = True
         r_cap = p_cap.add_run("Figure 3. Empirical median latency comparison for RSA and ECDSA key generation, signing, and verification.")
         r_cap.font.size = Pt(7.8)
@@ -654,7 +654,7 @@ def generate_report():
     # -------------------------------------------------------------
     # SECTION 6: CONCLUSION
     # -------------------------------------------------------------
-    p_h6 = add_p(space_before=1.5, space_after=0.3, line_spacing=1.01, align=WD_ALIGN_PARAGRAPH.LEFT)
+    p_h6 = add_p(space_before=1.0, space_after=0.2, line_spacing=1.0, align=WD_ALIGN_PARAGRAPH.LEFT)
     p_h6.paragraph_format.keep_with_next = True
     r_h6 = p_h6.add_run("6. Conclusion")
     r_h6.bold = True
@@ -662,7 +662,7 @@ def generate_report():
     r_h6.font.size = Pt(11.0)
     r_h6.font.color.rgb = RGBColor(26, 35, 126)
 
-    p = add_p(space_before=0, space_after=0.4, line_spacing=1.01)
+    p = add_p(space_before=0, space_after=0.2, line_spacing=1.0)
     p.add_run(
         "This research examined the cryptographic foundations, operational trade-offs, and practical deployment of RSA in modern security architectures. "
         "While elliptic-curve cryptography (ECDSA and Schnorr) rightfully dominates public blockchain consensus layers due to compact public keys and signatures that "
@@ -674,7 +674,7 @@ def generate_report():
         "However, cryptographic digital signatures alone do not guarantee complete system security; robust authorization requires defense-in-depth across deterministic serialization, "
         "stateful replay prevention, secure key custody (such as HSM storage), and transport encryption (TLS 1.3)."
     )
-    p = add_p(space_before=0, space_after=0.4, line_spacing=1.01)
+    p = add_p(space_before=0, space_after=0.2, line_spacing=1.0)
     p.add_run(
         "At an approximately equivalent 128-bit classical security strength, RSA-3072 provides robust resistance against conventional mathematical cryptanalysis, "
         "though it incurs substantially larger key and signature footprints than 256-bit elliptic curves. "
@@ -687,7 +687,7 @@ def generate_report():
     # -------------------------------------------------------------
     # SECTION 7: REFERENCES
     # -------------------------------------------------------------
-    p_h7 = add_p(space_before=1.4, space_after=0.3, line_spacing=1.01, align=WD_ALIGN_PARAGRAPH.LEFT)
+    p_h7 = add_p(space_before=1.0, space_after=0.2, line_spacing=1.0, align=WD_ALIGN_PARAGRAPH.LEFT)
     p_h7.paragraph_format.keep_with_next = True
     r_h7 = p_h7.add_run("7. References")
     r_h7.bold = True
@@ -710,17 +710,18 @@ def generate_report():
         "[12] Bitcoin Core Developers, \"Bitcoin Developer Guide: Transactions,\" Bitcoin Project, n.d. [Online; accessed 2026]. https://developer.bitcoin.org/devguide/transactions.html",
         "[13] Ethereum Foundation, \"Ethereum Developer Documentation: Transactions and Cryptographic Signatures,\" n.d. [Online; accessed 2026]. https://ethereum.org/en/developers/docs/transactions/",
         "[14] Google Security Research, \"Project Wycheproof: Cryptographic Test Vectors for Asymmetric Algorithms,\" GitHub repository (v0.9 snapshot), n.d. [Online; accessed 2026]. https://github.com/google/wycheproof",
-        "[15] V. Shoup, \"OAEP Reconsidered,\" Journal of Cryptology, vol. 15, no. 4, pp. 223–249, Sep. 2002 (extended abstract in CRYPTO 2001, LNCS 2139, pp. 133–159, Springer). https://doi.org/10.1007/s00145-002-0109-1",
-        "[16] E. Fujisaki, T. Okamoto, D. Pointcheval, and J. Stern, \"RSA-OAEP is Secure under the RSA Assumption,\" Journal of Cryptology, vol. 17, no. 2, pp. 81–104, Mar. 2004 (extended abstract in CRYPTO 2001, LNCS 2139, pp. 260–274, Springer). https://doi.org/10.1007/s00145-002-0204-3"
+        "[15] V. Shoup, \"OAEP Reconsidered,\" Journal of Cryptology, vol. 15, no. 4, pp. 223–249, Sep. 2002 (extended abstract in Advances in Cryptology – CRYPTO 2001, LNCS 2139, pp. 239–259, Springer). https://doi.org/10.1007/s00145-002-0109-1",
+        "[16] E. Fujisaki, T. Okamoto, D. Pointcheval, and J. Stern, \"RSA-OAEP is Secure under the RSA Assumption,\" Journal of Cryptology, vol. 17, no. 2, pp. 81–104, Mar. 2004 (extended abstract in Advances in Cryptology – CRYPTO 2001, LNCS 2139, pp. 260–274, Springer). https://doi.org/10.1007/s00145-002-0204-y",
+        "[17] M. Bellare and P. Rogaway, \"Optimal Asymmetric Encryption,\" in Advances in Cryptology – EUROCRYPT '94, Lecture Notes in Computer Science, vol. 950, pp. 92–111, Springer, 1995. https://doi.org/10.1007/BFb0053428"
     ]
 
     for ref in refs:
-        p_ref = add_p(space_before=0, space_after=0.2, line_spacing=1.0, align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+        p_ref = add_p(space_before=0, space_after=0.1, line_spacing=1.0, align=WD_ALIGN_PARAGRAPH.JUSTIFY)
         p_ref.paragraph_format.left_indent = Inches(0.18)
         p_ref.paragraph_format.first_line_indent = Inches(-0.18)
         r_ref = p_ref.add_run(ref)
         r_ref.font.name = 'Times New Roman'
-        r_ref.font.size = Pt(7.3)
+        r_ref.font.size = Pt(7.1)
 
     out_file = REPORT_DIR / "RSA_Real_World_Applications_Report.docx"
     doc.save(str(out_file))

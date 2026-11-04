@@ -32,7 +32,7 @@ This document records the comprehensive technical audit, targeted corrections, a
 | **ECDSA DER Sample Wording** | Accurately reflect single sampled measurement (`len(ec_signatures[0])`). | Updated wording to: "The recorded ECDSA DER signature sample was 71 bytes, with DER-encoded signatures generally varying between 70 and 72 bytes due to variable-length ASN.1 INTEGER encoding of $r$ and $s$." Avoided claiming an average where a sample was recorded. | **Verified** in Section 5.3, Table 1, Table 2, and README. |
 | **Atomic Replay Protection Boundary** | Clarify prototype vs. production concurrency boundaries. | Explicitly documented in Section 4.3 and Algorithm 1 that the prototype's in-memory Python set is an educational mechanism; production distributed deployments require strictly atomic check-and-insert logic (e.g., Redis SETNX or SQL unique constraint transactions) with TTL expiration across horizontal restarts. | **Verified** in Section 4.3, Algorithm 1, and README. |
 | **TLS 1.3 Standards (RFC 9846, 9963, 10024)** | Verify official RFC publication status and metadata. | Verified RFC 9846 (published July 2026, superseding RFC 8446). Verified RFC 9963 (April 2026 legacy client auth exception) and RFC 10024 (August 2026 PQ/T hybrid key agreement). Emphasized TLS 1.3 server authentication mandates RSA-PSS. | **Verified** in Reference [3], `Research_Sources.md`, and README. |
-| **Word Pagination & Layout Integrity** | Strict 5 A4 page maximum constraint; eliminate split across pages for Table 2 and Algorithm 1; disclose COM rendering engine. | Final layout parameters: Margins (1.45 cm top/bottom, 1.60 cm left/right), 9.5 pt font, 1.0 line spacing. Algorithm 1 is unified on Page 4 with `w:cantSplit` and `keep_together`. Table 1 is unified on Page 2. Table 2 is unified on Page 4. Figure 1 is on Page 2, Figure 2 is on Page 3, and Figure 3 is on Page 4. Page 5 contains empirical findings analysis, Section 6 (Conclusion), and all 14 references [1]–[14]. Verified via COM automation to occupy **exactly 5 A4 pages** (Word count: 4,082 words). Explicitly disclosed that Kingsoft WPS Office 12.1.0.29162 serves as the active registered COM automation provider. | **Verified** via COM automation (`ComputeStatistics(2) == 5`). |
+| **Word Pagination & Layout Integrity** | Strict 5 A4 page maximum constraint; eliminate split across pages for Table 2 and Algorithm 1; disclose COM rendering engine. | Final layout parameters: Margins (1.45 cm top/bottom, 1.60 cm left/right), 9.5 pt font, 1.0 line spacing. Algorithm 1 is unified on Page 4 with `w:cantSplit` and `keep_together`. Table 1 is unified on Page 2. Table 2 is unified on Page 4. Figure 1 is on Page 2, Figure 2 is on Page 3, and Figure 3 is on Page 4. Page 5 contains empirical findings analysis, Section 6 (Conclusion), and all references (expanded to 17 references [1]–[17] in Round 5). Verified via COM automation to occupy **exactly 5 A4 pages** (Word count: 4,747 words in final deliverable). Explicitly disclosed that Kingsoft WPS Office 12.1.0.29162 serves as the active registered COM automation provider. | **Verified** via COM automation (`ComputeStatistics(2) == 5`). |
 
 ---
 
@@ -76,7 +76,7 @@ This document records the comprehensive technical audit, targeted corrections, a
   - Page 2: Figure 1, Section 2.3, Section 3, Table 1 (comparison matrix), Section 3.1 header.
   - Page 3: Section 3.1 body (BIP 141 SegWit calculation, EIP-198, ERC-2098), Section 3.2 (Bellcore CRT attack formula and EMSA-PSS explanation), Section 4, Section 4.1, Figure 2.
   - Page 4: Section 4.2, Algorithm 1 (boxed container with `w:cantSplit`), Section 4.3 (Prototype scope and 5 security boundaries), Section 5, 5.1, 5.2, 5.3, Table 2 (Empirical benchmark results, rows 0–4 unbroken with caption).
-  - Page 5: Figure 3, Section 5.3 empirical analysis (points 1–3), Section 6 (Conclusion), Section 7 (References [1]–[14] ending cleanly on Page 5).
+  - Page 5: Figure 3, Section 5.3 empirical analysis (points 1–3), Section 6 (Conclusion), Section 7 (References ending cleanly on Page 5; expanded to [1]–[17] in Round 5).
 - **Word Automation Environment Disclosure:** The COM automation audit was executed using **Kingsoft WPS Office (Version 12.0, Build 12.1.0.29162)**, which is registered as the system's active COM automation server for `Word.Application` ({000209FF-0000-0000-C000-000000000046}). Under this rendering engine, the document renders to exactly 5 pages. In native Microsoft Word environments, minor typographic differences across font rasterizers should be evaluated against this 5-page ceiling constraint.
 
 ---
@@ -156,12 +156,12 @@ During the final technical polishing round (November 2026), six targeted cryptog
    - *Location:* Updated in Section 3.2 of `build_report_doc.py`, `README.md`, and `Research_Sources.md`.
 
 7. **Lecture Slide Reference Materials & Course Alignment:**
-   - *Curriculum Alignment:* Audited all 8 university lecture slide collections: Sessions 1 to 7 form the core course syllabus covering symmetric cryptography, prime fields, modular arithmetic, RSA, hash functions, digital signatures, and ECC. Session 8 provides complementary coverage on MACs, HMAC, and PKI. Notation and formulas ($n = p \cdot q$, $e$, $d$, $\lambda(n)$, $\phi(n)$) were cross-checked and found fully aligned.
+   - *Curriculum Alignment (Historical Audit Note; Superseded):* Early review audited 8 course slide collections; subsequent verification established that the official verified syllabus consists of Sessions 1 to 7 (foundational cryptographic mechanics, modular arithmetic, RSA, hash functions, digital signatures, and ECC). Sessions 1–7 form the verified core syllabus. Notation and formulas ($n = p \cdot q$, $e$, $d$, $\lambda(n)$, $\phi(n)$) were cross-checked and found fully aligned.
 
 8. **Word Layout & Pagination Verification:**
    - *Rendering Engine:* Kingsoft WPS Office 12.1.0.29162 (active COM provider for `Word.Application`).
    - *Status:* **Exactly 5 A4 pages** (verified via `doc.ComputeStatistics(2) == 5`).
-   - *Layout Integrity:* Algorithm 1 is unified on Page 4 (`w:cantSplit`, `keep_together`). Table 1 is unified on Page 2. Table 2 is unified on Page 4. Figure 1 on Page 2, Figure 2 on Page 3, Figure 3 on Page 4. All 14 references [1]–[14] conclude cleanly on Page 5.
+   - *Layout Integrity:* Algorithm 1 is unified on Page 4 (`w:cantSplit`, `keep_together`). Table 1 is unified on Page 2. Table 2 is unified on Page 4. Figure 1 on Page 2, Figure 2 on Page 3, Figure 3 on Page 4. All references conclude cleanly on Page 5 (expanded to [1]–[17] in Round 5).
 
 
 ---
@@ -199,4 +199,34 @@ In November 2026, an independent cryptographic audit cross-checked the repositor
 6. **Word Document Pagination & Layout Integrity:**
    - *Automation Engine:* Kingsoft WPS Office (Version 12.0, Build 12.1.0.29162; active registered COM provider for `Word.Application`).
    - *Rendered Pages:* **Exactly 5 A4 pages** (`doc.ComputeStatistics(2) == 5`).
-   - *Layout Verification:* Table 1 (Page 1), Table 2 (Page 2), Table 3 / Algorithm 1 (Page 4, `w:cantSplit`, `keep_together`), Table 4 / Table 2 Benchmarks (Page 4), Figure 1 (Page 2), Figure 2 (Page 3), Figure 3 (Page 5). All 16 references [1]–[16] conclude cleanly on Page 5 with ample bottom margin clearance.
+   - *Layout Verification:* Table 1 (Page 1), Table 2 (Page 2), Table 3 / Algorithm 1 (Page 4, `w:cantSplit`, `keep_together`), Table 4 / Table 2 Benchmarks (Page 4), Figure 1 (Page 2), Figure 2 (Page 3), Figure 3 (Page 5). All references conclude cleanly on Page 5 with ample bottom margin clearance (expanded from [1]–[16] to [1]–[17] in Round 5).
+
+---
+
+## 7. Round 5 Final Micro-Fix — Cryptographic Academic Audit & Harmonization
+
+In November 2026, a final academic accuracy and documentation consistency review was performed. The following specific items were resolved and synchronized across all deliverables:
+
+### 7.1 Summary of Targeted Corrections
+
+1. **Bellare & Rogaway (1994) Dedicated Citation ([17]):**
+   - *Rationale:* Section 2.2 delineates the historical progression of OAEP proofs: Bellare & Rogaway (1994), Shoup (2001), and Fujisaki et al. (2001). To ensure academic rigor and complete bibliographic traceability, a dedicated entry for Bellare & Rogaway was added as reference `[17]`.
+   - *Citation Details:* M. Bellare and P. Rogaway, "Optimal Asymmetric Encryption," in *Advances in Cryptology – EUROCRYPT '94*, Lecture Notes in Computer Science, vol. 950, pp. 92–111, Springer, 1995. DOI: `10.1007/BFb0053428`.
+   - *Theoretical Scope:* Accurately attributed semantic security against chosen-plaintext attacks (IND-CPA) and plaintext awareness (implying IND-CCA1 for general trapdoor permutations in the Random Oracle Model), without overstating general IND-CCA2 security.
+
+2. **Shoup (2001) Conference Proceedings Metadata ([15]):**
+   - *Correction:* In reference [15], corrected the conference proceedings page range in *Advances in Cryptology – CRYPTO 2001*, Lecture Notes in Computer Science (LNCS), vol. 2139, from `pp. 133–159` to the authoritative publisher page range **`pp. 239–259`**.
+   - *Full Citation:* V. Shoup, "OAEP Reconsidered," *Journal of Cryptology*, vol. 15, no. 4, pp. 223–249, Sep. 2002 (extended abstract in *Advances in Cryptology – CRYPTO 2001*, LNCS 2139, pp. 239–259, Springer). DOI: `10.1007/s00145-002-0109-1`.
+
+3. **Fujisaki et al. (2001/2004) DOI Correction ([16]):**
+   - *Correction:* In reference [16], corrected the official Springer Digital Object Identifier (DOI) from `10.1007/s00145-002-0204-3` to **`10.1007/s00145-002-0204-y`** (ending in `-y`).
+   - *Full Citation:* E. Fujisaki, T. Okamoto, D. Pointcheval, and J. Stern, "RSA-OAEP is Secure under the RSA Assumption," *Journal of Cryptology*, vol. 17, no. 2, pp. 81–104, Mar. 2004 (extended abstract in *Advances in Cryptology – CRYPTO 2001*, LNCS 2139, pp. 260–274, Springer). DOI: `10.1007/s00145-002-0204-y`.
+
+4. **Reference Count & Documentation Harmonization:**
+   - *Harmonization:* Synchronized all active references to reflect exactly **17 primary references** [1]–[17] across `RSA_Real_World_Applications_Report.docx`, `02_Source_Code/build_report_doc.py`, `05_Research_References/Research_Sources.md`, `README.md`, and `FINAL_REVIEW_NOTES.md`.
+   - *Lecture Course Scope:* Reaffirmed that the verified academic lecture syllabus encompasses **Sessions 1–7**. Any earlier references to an 8th session in historical draft logs are explicitly noted as superseded.
+
+5. **Word Document Pagination & Margin Safety Verification:**
+   - *Rendering Engine:* Kingsoft WPS Office (Version 12.0, Build 12.1.0.29162; active registered COM provider for `Word.Application`).
+   - *Rendered Pages:* **Strictly 5 A4 pages** (`doc.ComputeStatistics(2) == 5`; word count: 4,747 words).
+   - *Vertical Clearance:* Fine-tuned Figure 3 width (2.25 in) and spacing in Section 6/7. The final paragraph (Reference [17]) concludes at vertical position 773.25 pt on Page 5, providing 26.75 pt of safety margin clearance before the 800 pt printable page limit.
