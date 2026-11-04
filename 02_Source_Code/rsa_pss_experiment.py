@@ -6,7 +6,7 @@ Real-World Applications of RSA - Digital Signature Scheme (RSA-PSS)
 for Off-Chain Cryptocurrency Withdrawal Authentication.
 
 This script executes:
-1. Full 108-test-case validation against Google Project Wycheproof (RSA-PSS 2048-bit, SHA-256).
+1. Validation against bundled Wycheproof test set (version 0.9 snapshot, 108 cases; RSA-PSS 2048-bit, SHA-256).
 2. Off-chain withdrawal request pipeline using atomic integer monetary units and deterministic serialization.
 3. Five security and tampering verification test scenarios.
 4. Independent empirical benchmarks for RSA (2048, 3072, 4096) and ECDSA (secp256k1).
@@ -262,12 +262,12 @@ def run_scenarios(private_key: rsa.RSAPrivateKey, public_key: rsa.RSAPublicKey) 
 
 
 # =====================================================================
-# 5. EXPANDED WYCHEPROOF VALIDATION (FULL 108 TEST CASES)
+# 5. BUNDLED WYCHEPROOF VALIDATION (VERSION 0.9 SNAPSHOT, 108 CASES)
 # =====================================================================
 
 def run_wycheproof_suite(json_path: Path) -> Dict[str, Any]:
     print("\n" + "="*75)
-    print("RUNNING GOOGLE PROJECT WYCHEPROOF TEST SUITE (FULL 108 TEST CASES)")
+    print("RUNNING BUNDLED WYCHEPROOF TEST SET (VERSION 0.9 SNAPSHOT, 108 CASES)")
     print(f"Suite: {json_path.name}")
     print("="*75)
 
@@ -287,7 +287,7 @@ def run_wycheproof_suite(json_path: Path) -> Dict[str, Any]:
     invalid_cases = 0
 
     log_entries = []
-    log_entries.append("GOOGLE PROJECT WYCHEPROOF RSA-PSS VALIDATION EXECUTION LOG")
+    log_entries.append("BUNDLED WYCHEPROOF RSA-PSS VALIDATION EXECUTION LOG (VERSION 0.9 SNAPSHOT)")
     log_entries.append(f"Suite File: {json_path.name}")
     log_entries.append(f"Algorithm: RSASSA-PSS | Modulus: 2048 bits | Hash: SHA-256 | Salt Length: 32 bytes")
     log_entries.append(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S UTC', time.gmtime())}\n")

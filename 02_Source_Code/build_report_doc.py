@@ -7,9 +7,10 @@ Compiles the audited academic research report into Microsoft Word format (.docx)
 Follows strict consistency and academic rigor:
 1. Dynamically reads empirical benchmark results directly from benchmark_results.csv.
 2. In-text benchmark statistics, Abstract, and Table 2 are populated from the active dataset.
-3. Formulates precise technical distinctions: TLS 1.3 authentication vs key exchange,
+3. Formulates precise technical distinctions: TLS 1.3 authentication vs key exchange (RFC 9846 / RFC 9963),
    SegWit weight and virtual size (BIP 141), BIP 340 Schnorr vs BIP 327 MuSig2,
-   RFC 8017 OAEP size constraints, and prototype vs production boundary.
+   RFC 8017 OAEP size constraints, EMSA-PSS message representatives in Bellcore CRT verification,
+   and prototype vs production security boundaries.
 4. Uses project-relative paths via pathlib.
 5. Strictly targets between 4 and 5 A4 pages (absolute maximum 5 pages).
 """
@@ -51,7 +52,7 @@ def set_cell_background(cell, fill_hex):
     tcPr.append(shd)
 
 
-def set_cell_margins(cell, top=30, bottom=30, left=45, right=45):
+def set_cell_margins(cell, top=25, bottom=25, left=40, right=40):
     tcPr = cell._tc.get_or_add_tcPr()
     tcMar = parse_xml(f'<w:tcMar {nsdecls("w")}><w:top w:w="{top}" w:type="dxa"/><w:bottom w:w="{bottom}" w:type="dxa"/><w:left w:w="{left}" w:type="dxa"/><w:right w:w="{right}" w:type="dxa"/></w:tcMar>')
     tcPr.append(tcMar)
@@ -132,19 +133,19 @@ def generate_report():
     section = doc.sections[0]
     section.page_width = Cm(21.0)
     section.page_height = Cm(29.7)
-    section.top_margin = Cm(1.65)
-    section.bottom_margin = Cm(1.65)
-    section.left_margin = Cm(1.75)
-    section.right_margin = Cm(1.75)
+    section.top_margin = Cm(1.60)
+    section.bottom_margin = Cm(1.60)
+    section.left_margin = Cm(1.70)
+    section.right_margin = Cm(1.70)
 
     add_header_footer(section)
 
     normal_style = doc.styles['Normal']
     normal_style.font.name = 'Times New Roman'
-    normal_style.font.size = Pt(10.5)
+    normal_style.font.size = Pt(10.0)
     normal_style.font.color.rgb = RGBColor(33, 33, 33)
 
-    def add_p(text="", space_before=0, space_after=1.0, line_spacing=1.02, align=WD_ALIGN_PARAGRAPH.JUSTIFY):
+    def add_p(text="", space_before=0, space_after=1.0, line_spacing=1.01, align=WD_ALIGN_PARAGRAPH.JUSTIFY):
         p = doc.add_paragraph(text)
         p.alignment = align
         p.paragraph_format.space_before = Pt(space_before)
@@ -153,7 +154,7 @@ def generate_report():
         return p
 
     def add_h1(text):
-        p = add_p(space_before=2.8, space_after=0.4, line_spacing=1.02, align=WD_ALIGN_PARAGRAPH.LEFT)
+        p = add_p(space_before=2.5, space_after=0.4, line_spacing=1.01, align=WD_ALIGN_PARAGRAPH.LEFT)
         p.paragraph_format.keep_with_next = True
         run = p.add_run(text)
         run.bold = True
@@ -163,7 +164,7 @@ def generate_report():
         return p
 
     def add_h2(text):
-        p = add_p(space_before=1.6, space_after=0.3, line_spacing=1.02, align=WD_ALIGN_PARAGRAPH.LEFT)
+        p = add_p(space_before=1.5, space_after=0.3, line_spacing=1.01, align=WD_ALIGN_PARAGRAPH.LEFT)
         p.paragraph_format.keep_with_next = True
         run = p.add_run(text)
         run.bold = True
@@ -179,13 +180,13 @@ def generate_report():
     r_t = p_title.add_run("Real-World Applications of RSA:\nCryptographic Foundations, Practical Implementation, and Off-Chain Blockchain Authentication")
     r_t.bold = True
     r_t.font.name = 'Times New Roman'
-    r_t.font.size = Pt(14)
+    r_t.font.size = Pt(13.5)
     r_t.font.color.rgb = RGBColor(13, 71, 161)
 
-    p_meta = add_p(space_before=1, space_after=4, align=WD_ALIGN_PARAGRAPH.CENTER)
-    r_m = p_meta.add_run("Academic Research Paper in Cryptography, Cybersecurity, and Blockchain Technology")
+    p_meta = add_p(space_before=1, space_after=3.5, align=WD_ALIGN_PARAGRAPH.CENTER)
+    r_m = p_meta.add_run("Academic Research Paper in Cryptography, Cybersecurity, and Blockchain Systems")
     r_m.font.name = 'Times New Roman'
-    r_m.font.size = Pt(9)
+    r_m.font.size = Pt(8.8)
     r_m.italic = True
     r_m.font.color.rgb = RGBColor(97, 97, 97)
 
@@ -194,43 +195,43 @@ def generate_report():
     tbl_abs.alignment = WD_TABLE_ALIGNMENT.CENTER
     cell_abs = tbl_abs.cell(0, 0)
     set_cell_background(cell_abs, "F0F4F8")
-    set_cell_margins(cell_abs, top=45, bottom=45, left=75, right=75)
+    set_cell_margins(cell_abs, top=40, bottom=40, left=70, right=70)
     
     p_abs = cell_abs.paragraphs[0]
     p_abs.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
     p_abs.paragraph_format.space_before = Pt(0)
     p_abs.paragraph_format.space_after = Pt(0)
-    p_abs.paragraph_format.line_spacing = 1.05
+    p_abs.paragraph_format.line_spacing = 1.03
     r_ab_b = p_abs.add_run("Abstract— ")
     r_ab_b.bold = True
-    r_ab_b.font.size = Pt(9)
+    r_ab_b.font.size = Pt(8.8)
     r_ab_t = p_abs.add_run(
         "The RSA algorithm remains a foundational pillar of modern public-key cryptography. "
         "While public blockchain consensus protocols predominantly utilize elliptic-curve cryptography (ECC) for on-chain state compactness, "
-        "RSA plays an essential role in enterprise infrastructure, Public Key Infrastructure (PKI), and internal gateway authorization. "
+        "RSA plays an enduring role in enterprise infrastructure, Public Key Infrastructure (PKI), and internal gateway authorization. "
         "This report provides an academic investigation of real-world RSA applications across theory, operational justification, and systems engineering. "
-        "We formulate RSA's mathematical foundations, contrasting RSA-OAEP encryption with RSA-PSS digital signatures (WHAT). "
+        "We formulate RSA's mathematical foundations, contrasting RSA-OAEP key transport with RSA-PSS digital signatures (WHAT). "
         "We analyze why RSA is favored in specific trust architectures, providing an evidence-based comparison against ECDSA and Schnorr signatures (WHY). "
-        "Finally, we design, implement, and benchmark an off-chain cryptocurrency withdrawal authentication system using RSA-PSS and SHA-256 (HOW). "
+        "Finally, we design, implement, and benchmark an educational off-chain cryptocurrency withdrawal authentication system using RSA-PSS and SHA-256 (HOW). "
         f"Empirical benchmarks across RSA (2048, 3072, 4096 bits) and ECDSA (secp256k1) on identical hardware demonstrate RSA's distinct operational profile: "
         f"while RSA signing is slower than ECDSA, RSA public exponent verification (e = 65,537) executes significantly faster across all tested key sizes—"
         f"RSA-2048 is {ratio_2048_ec}x faster, RSA-3072 is {ratio_3072_ec}x faster, and RSA-4096 is {ratio_4096_ec}x faster than ECDSA verification. "
         f"At the approximately equivalent 128-bit classical security level (RSA-3072 vs. ECDSA-secp256k1), RSA-3072 verification is {ratio_3072_ec}x faster than ECDSA, "
-        f"although ECDSA signing is {ratio_sign_ec}x faster than RSA-3072 signing. "
+        f"whereas ECDSA signing is {ratio_sign_ec}x faster than RSA-3072. "
         "Adversarial security scenario testing demonstrates that combining cryptographic digital signatures with application-level timestamp freshness and nonce replay caches "
         "significantly strengthens request authentication against payload tampering and replay attacks, although complete system security requires defense-in-depth "
-        "across transport encryption, secure key storage, and operational controls. "
-        "Evaluation against all 108 selected test vectors of the Google Project Wycheproof suite confirms that the verification engine correctly accepts all 63 valid test cases "
-        "and rejects all 45 invalid test cases."
+        "across transport encryption, secure key custody, and operational controls. "
+        "Evaluation against the bundled RSA-PSS 2048-bit SHA-256/MGF1-SHA256 Wycheproof test-vector set (version 0.9 snapshot, 108 cases) confirms that the verification engine "
+        "correctly accepts all 63 expected-valid test cases and rejects all 45 expected-invalid test cases, validating execution against this selected verification suite."
     )
-    r_ab_t.font.size = Pt(9)
+    r_ab_t.font.size = Pt(8.8)
 
-    p_kw = add_p(space_before=2, space_after=4)
+    p_kw = add_p(space_before=1.5, space_after=3.5)
     r_kw_b = p_kw.add_run("Keywords: ")
     r_kw_b.bold = True
-    r_kw_b.font.size = Pt(8.5)
+    r_kw_b.font.size = Pt(8.3)
     r_kw = p_kw.add_run("RSA Cryptography, RSA-PSS, Digital Signatures, PKI, Hybrid Encryption, Cryptocurrency Security, Off-chain Authentication, Empirical Evaluation.")
-    r_kw.font.size = Pt(8.5)
+    r_kw.font.size = Pt(8.3)
     r_kw.italic = True
 
     # -------------------------------------------------------------
@@ -239,19 +240,20 @@ def generate_report():
     add_h1("1. Introduction and Research Scope")
     p = add_p()
     p.add_run(
-        "Introduced by Ron Rivest, Adi Shamir, and Leonard Adleman in 1977 [1], the RSA algorithm solved the historic key distribution problem "
+        "First documented by Ron Rivest, Adi Shamir, and Leonard Adleman in their April 1977 MIT research memorandum and published in Communications of the ACM in 1978 [1], "
+        "and formally standardized under PKCS #1 / RFC 8017 [2], the RSA algorithm solved the historic key distribution problem "
         "by separating the private transformation used for decryption and signing from the public transformation used for encryption and verification. "
         "For nearly five decades, RSA has underpinned digital commerce, software distribution, and enterprise identity management."
     )
     p = add_p()
     p.add_run(
         "In modern blockchain environments, significant architectural debate centers on algorithm selection. Major public networks—including Bitcoin and Ethereum—rely "
-        "on Elliptic Curve Cryptography (ECC) for native on-chain transaction signatures [6], [10], [11]. However, enterprise cryptocurrency exchanges do not operate solely on-chain; "
-        "they rely on layered off-chain microservices, hardware security modules (HSMs), and Transport Layer Security (TLS 1.3) tunnels [2] to authenticate transactions "
-        "before dispatching them to blockchain nodes. This report investigates real-world RSA applications across three dimensions: "
-        "(1) WHAT: mathematical principles and operational distinctions between RSA-OAEP encryption and RSA-PSS signatures; "
+        "on Elliptic Curve Cryptography (ECC) for native on-chain transaction signatures [8], [12], [13]. In enterprise cryptocurrency operations, transaction handling does not occur solely on-chain; "
+        "systems may employ layered off-chain microservices, secure hardware enclaves or Hardware Security Modules (HSMs), and Transport Layer Security (TLS 1.3) tunnels [3] "
+        "to authenticate and authorize requests before dispatching them to blockchain nodes. This report investigates real-world RSA applications across three dimensions: "
+        "(1) WHAT: mathematical principles and operational distinctions between RSA-OAEP key transport and RSA-PSS signatures; "
         "(2) WHY: security justification of RSA and an evidence-based comparison with ECDSA and Schnorr; "
-        "(3) HOW: practical design, implementation, and empirical evaluation of an off-chain cryptocurrency withdrawal authentication system using RSA-PSS."
+        "(3) HOW: practical design, implementation, and empirical evaluation of an educational off-chain cryptocurrency withdrawal authentication system using RSA-PSS."
     )
 
     # -------------------------------------------------------------
@@ -261,7 +263,7 @@ def generate_report():
     add_h2("2.1 Mathematical Foundations and Operating Mechanics")
     p = add_p()
     p.add_run(
-        "The security of RSA rests on the integer factorization problem—the computational difficulty of determining prime factors p and q from modulus n = p · q [1]. "
+        "The security of RSA rests on the integer factorization problem—the computational difficulty of determining prime factors p and q from modulus n = p · q [1], [2]. "
         "The operational lifecycle comprises: (i) computing Euler's totient φ(n) = (p − 1)(q − 1); (ii) selecting public exponent e coprime to φ(n) "
         "(standardized as Fermat prime e = 65,537 = 2¹⁶ + 1); and (iii) deriving private exponent d ≡ e⁻¹ (mod φ(n)). "
         "The public key comprises (e, n), and the private key comprises (d, n) or Chinese Remainder Theorem (CRT) parameters (p, q, dP, dQ, qInv). "
@@ -275,9 +277,9 @@ def generate_report():
     p.add_run(
         "RSA supports two distinct operational primitives designed for contrasting security goals:\n"
         "• Asymmetric Encryption (Confidentiality): The sender encrypts plaintext using the recipient's public key (e, n); only the recipient's private key d can decrypt. "
-        "Modern systems require RSA-OAEP (Optimal Asymmetric Encryption Padding, RFC 8017 [1]), which uses two hash-based masking rounds to achieve provable IND-CCA2 security.\n"
+        "Modern systems require RSA-OAEP (Optimal Asymmetric Encryption Padding, RFC 8017 [2]), which uses two hash-based masking rounds to achieve provable IND-CCA2 security.\n"
         "• Digital Signatures (Authenticity, Integrity, Non-Repudiation Evidence): The signer processes message digest M using private key d to produce signature S = (EM)^d mod n. "
-        "Any party possessing public key e verifies that EM ≡ S^e mod n. Under RFC 8017 and NIST FIPS 186-5 [1], [3], RSA-PSS (Probabilistic Signature Scheme) is the state-of-the-art standard. "
+        "Any party possessing public key e verifies that EM ≡ S^e mod n. Under RFC 8017 and NIST FIPS 186-5 [2], [4], RSA-PSS (Probabilistic Signature Scheme) is the state-of-the-art standard. "
         "PSS incorporates a randomized salt into EMSA-PSS encoding, establishing a tight security reduction to the RSA problem in the Random Oracle Model (EUF-CMA security). "
         "Crucially, while a digital signature provides cryptographic non-repudiation evidence, full legal non-repudiation requires trusted identity binding, secure key custody, and operational controls."
     )
@@ -285,26 +287,27 @@ def generate_report():
     # Figure 1: RSA-PSS Workflow
     wf_img = FIG_DIR / "rsa_pss_workflow.png"
     if wf_img.exists():
-        p_img = add_p(space_before=1.0, space_after=0.6, align=WD_ALIGN_PARAGRAPH.CENTER)
+        p_img = add_p(space_before=0.8, space_after=0.4, align=WD_ALIGN_PARAGRAPH.CENTER)
         p_img.paragraph_format.keep_with_next = True
         r_img = p_img.add_run()
-        r_img.add_picture(str(wf_img), width=Inches(3.95))
-        p_cap = add_p(space_before=0.6, space_after=1.8, align=WD_ALIGN_PARAGRAPH.CENTER)
+        r_img.add_picture(str(wf_img), width=Inches(3.85))
+        p_cap = add_p(space_before=0.4, space_after=1.5, align=WD_ALIGN_PARAGRAPH.CENTER)
         p_cap.paragraph_format.keep_with_next = True
         r_cap = p_cap.add_run("Figure 1. Operational workflow of the RSA-PSS probabilistic digital signature scheme (RFC 8017 / FIPS 186-5).")
-        r_cap.font.size = Pt(8)
+        r_cap.font.size = Pt(7.8)
         r_cap.italic = True
 
     add_h2("2.3 Real-World Application Breadth")
     p = add_p()
     p.add_run(
         "In industrial systems, RSA is deployed across three primary domains: "
-        "(1) Hybrid Encryption: RSA is not used to encrypt large bulk data directly due to algebraic length constraints: under RFC 8017 Section 7.1.1, "
+        "(1) Hybrid Encryption and RSA Key Transport: RSA is not used to encrypt large bulk data directly due to algebraic length constraints: under RFC 8017 Section 7.1.1 [2], "
         "the maximum plaintext size for RSA-OAEP is bounded by mLen <= k - 2hLen - 2 (for a 2048-bit key k = 256 and SHA-256 hLen = 32, mLen <= 190 bytes). "
-        "Instead, RSA-OAEP encapsulates ephemeral symmetric keys (e.g., 256-bit AES-GCM), combining asymmetric key exchange with high-throughput symmetric data streaming. "
-        "(2) Code Signing and Firmware Integrity: Operating systems, mobile app stores, and secure bootloaders rely on RSA-PSS signatures to verify executable authenticity before execution. "
-        "(3) Digital Certificates and PKI: In TLS 1.3 (RFC 8446 [2]), static RSA key exchange was entirely removed in favor of ephemeral Diffie-Hellman ((EC)DHE) to guarantee forward secrecy. "
-        "RSA's modern TLS 1.3 role is strictly endpoint authentication: RSA X.509 certificates authenticate servers, and CertificateVerify handshake messages use RSA-PSS signatures."
+        "Instead, RSA-OAEP is deployed for RSA key transport—encapsulating ephemeral symmetric keys (e.g., 256-bit AES-GCM)—combining asymmetric key establishment with high-throughput symmetric data streaming. "
+        "(2) Code Signing and Firmware Integrity: Operating systems, application marketplaces, and secure bootloaders frequently deploy RSA digital signatures (including RSA-PSS and PKCS#1 v1.5) to verify executable integrity before launch. "
+        "(3) Digital Certificates and PKI: In TLS 1.3 (RFC 9846 [3], superseding RFC 8446), static RSA key exchange was entirely removed in favor of ephemeral Diffie-Hellman ((EC)DHE) and post-quantum hybrid KEMs to guarantee forward secrecy. "
+        "RSA's modern TLS 1.3 role is strictly endpoint authentication: RSA X.509 certificates authenticate servers, and CertificateVerify handshake messages require RSA-PSS signatures. "
+        "While RFC 9963 provides a specialized legacy exception for client certificate authentication with PKCS#1 v1.5 in restricted enterprise environments, server RSA authentication in TLS 1.3 mandates RSA-PSS."
     )
 
     # -------------------------------------------------------------
@@ -313,9 +316,10 @@ def generate_report():
     add_h1("3. Why RSA? Security Purpose and Comparative Evaluation")
     p = add_p()
     p.add_run(
-        "RSA addresses the core security objectives of information assurance: confidentiality (via hybrid encryption), entity authentication, "
+        "RSA addresses the core security objectives of information assurance: confidentiality (via hybrid key transport), entity authentication, "
         "data integrity, and non-repudiation evidence. Table 1 compares RSA with elliptic curve alternatives: "
-        "ECDSA (secp256k1) [10], [11], Schnorr (BIP 340) [6], and Ed25519 [9], with security strengths benchmarked according to NIST SP 800-56B Rev. 2 (Table 2 and Appendix D) [4] and NIST SP 800-57 Part 1 Rev. 5 [5]."
+        "ECDSA (secp256k1) [12], [13], Schnorr (BIP 340) [8], and Ed25519 [11], with security strengths benchmarked according to NIST SP 800-56B Rev. 2 (Table 2 and Appendix D) [5] "
+        "and generic elliptic-curve strength mappings from NIST SP 800-57 Part 1 Rev. 5 [6]."
     )
 
     # TABLE 1: COMPARISON TABLE
@@ -327,30 +331,30 @@ def generate_report():
     for j, h in enumerate(headers):
         cell = tbl_comp.cell(0, j)
         set_cell_background(cell, "E8EAF6")
-        set_cell_margins(cell, top=18, bottom=18, left=30, right=30)
+        set_cell_margins(cell, top=16, bottom=16, left=25, right=25)
         p_c = cell.paragraphs[0]
         p_c.alignment = WD_ALIGN_PARAGRAPH.CENTER
         p_c.paragraph_format.space_before = Pt(0)
         p_c.paragraph_format.space_after = Pt(0)
         r = p_c.add_run(h)
         r.bold = True
-        r.font.size = Pt(7.8)
+        r.font.size = Pt(7.6)
 
     comp_data = [
         ["Hard Problem", "Factoring", "Factoring", "EC Discrete Log", "EC Discrete Log", "Edwards EC-DLOG"],
-        ["NIST Security Strength", "112 bits [4]", "128 bits [4]", "128 bits [5]", "128 bits [5]", "128 bits [5]"],
+        ["Security Strength", "112 bits [5]", "128 bits [5]", "~128 bits (generic EC mapping [6])", "128 bits (generic EC mapping [6])", "128 bits (generic EC mapping [6])"],
         ["Key Size / Sig Size", 
          "Modulus: 256 B\nSig: 256 B\nDER PubKey: ~294 B", 
          "Modulus: 384 B\nSig: 384 B\nDER PubKey: ~422 B", 
-         "PubKey: 33 B (comp)\nBitcoin: ~71–73 B (DER)\nEthereum: 65 B (r||s||v),\nRLP fields; 64 B (ERC-2098)", 
+         "PubKey: 33 B (comp)\nBitcoin: ~70–72 B (DER; measured 71 B)\nEthereum: 65 B (r||s||v), RLP; 64 B (ERC-2098)", 
          "PubKey: 32 B (x-only)\nBIP341: 64 B (DEFAULT)\nor 65 B (explicit sighash)", 
-         "PubKey: 32 B\nSig: 64 B [9]"],
+         "PubKey: 32 B\nSig: 64 B [11]"],
         ["Relative Verify Speed", 
          f"Empirical: {r2048_ver_ms:.3f} ms\n({ratio_2048_ec}x vs ECDSA)", 
          f"Empirical: {r3072_ver_ms:.3f} ms\n({ratio_3072_ec}x vs ECDSA)", 
          f"Empirical: {ecdsa_ver_ms:.3f} ms\n(Baseline: 1.0x)", 
-         "Batch verify supported;\nnot benchmarked [6]", 
-         "High efficiency in lit. [9];\nnot benchmarked"],
+         "Batch verify supported;\nnot benchmarked [8]", 
+         "High efficiency in lit. [11];\nnot benchmarked"],
     ]
 
     for i, row in enumerate(comp_data):
@@ -358,18 +362,18 @@ def generate_report():
             cell = tbl_comp.cell(i+1, j)
             if i % 2 == 1:
                 set_cell_background(cell, "F9FAFB")
-            set_cell_margins(cell, top=15, bottom=15, left=30, right=30)
+            set_cell_margins(cell, top=14, bottom=14, left=25, right=25)
             p_c = cell.paragraphs[0]
             p_c.alignment = WD_ALIGN_PARAGRAPH.CENTER if j > 0 else WD_ALIGN_PARAGRAPH.LEFT
             p_c.paragraph_format.space_before = Pt(0)
             p_c.paragraph_format.space_after = Pt(0)
             r = p_c.add_run(val)
-            r.font.size = Pt(7.6)
+            r.font.size = Pt(7.4)
 
-    p_tc = add_p(space_before=1, space_after=1.8, align=WD_ALIGN_PARAGRAPH.CENTER)
+    p_tc = add_p(space_before=1, space_after=1.5, align=WD_ALIGN_PARAGRAPH.CENTER)
     p_tc.paragraph_format.keep_with_next = True
     r_tc = p_tc.add_run("Table 1. Systematic comparison of asymmetric cryptographic algorithms across security and operational metrics.")
-    r_tc.font.size = Pt(8)
+    r_tc.font.size = Pt(7.8)
     r_tc.italic = True
 
     add_h2("3.1 Storage and Verification Trade-Offs in Blockchain Consensus Layers")
@@ -378,25 +382,24 @@ def generate_report():
         "A central requirement of public blockchains is minimizing ledger storage bloat and bandwidth overhead. "
         "In Bitcoin and Ethereum, transaction fees and execution costs directly penalize excessive data footprints. "
         "Under Bitcoin's economic model, fees are computed by multiplying transaction virtual size (vSize in vB) by the prevailing market feerate (sat/vB), "
-        "whereas Ethereum transaction execution costs are measured using gas for computational steps and calldata serialization [10], [11]. "
+        "whereas Ethereum transaction execution costs are measured using gas for computational steps and calldata serialization [12], [13]. "
         "In both networks, compact cryptographic signatures and public keys are paramount for node throughput and decentralized state validation. "
-        "To evaluate transaction overhead accurately under Bitcoin BIP 141 (Segregated Witness) [8], transaction weight is formulated as "
+        "To evaluate transaction overhead accurately under Bitcoin BIP 141 (Segregated Witness) [9], transaction weight is formulated as "
         "Weight = (Base Size * 3) + Total Size, and virtual size is vSize = ceil(Weight / 4). "
         "A standard 1-input, 2-output SegWit P2WPKH transaction has a baseline virtual size of ~141 vB (~210–220 serialized bytes). "
-        "For a typical P2WPKH witness stack—comprising 1 byte for stack item count, 1 byte for signature length prefix, ~71–73 bytes for the DER signature plus sighash byte, "
-        "1 byte for public key length prefix, and 33 bytes for the compressed public key—the witness totals approximately 107–109 bytes [10]. "
+        "For a typical P2WPKH witness stack—comprising 1 byte for stack item count, 1 byte for signature length prefix, ~70–72 bytes for the DER signature plus sighash byte, "
+        "1 byte for public key length prefix, and 33 bytes for the compressed public key—the witness totals approximately 107–109 bytes [12]. "
         "In a hypothetical architecture where RSA-2048 were used for native transaction authorization, explicitly assuming two separate stack items "
         "(a 256-byte RSA modulus and a 256-byte RSA signature, each prefixed by a 3-byte CompactSize length prefix for 256-byte items), "
         "the witness size equals 1 + 3 + 256 + 3 + 256 = 519 bytes. Compared with standard P2WPKH, this adds approximately 410–412 witness bytes per input. "
         "Under BIP 141 weight rules, this witness overhead adds 410–412 weight units, which corresponds to approximately 103 additional virtual bytes "
         "(~103 vB per input, subject to transaction weight rounding). For a representative baseline 141-vB transaction, this hypothetical expansion is "
         "approximately 73% (expanding to ~244 vB), proportionally increasing miner fees. "
-        "Crucially, this analysis models a hypothetical transaction format; native Bitcoin RSA verification is not currently supported "
+        "Crucially, this analysis models a hypothetical transaction format; native Bitcoin RSA verification is not supported "
         "(Bitcoin script lacks native RSA verification opcodes, requiring consensus hard or soft forks), and the 73% expansion assumes both RSA values "
         "are carried in each input. Alternative key-storage designs—such as registering public keys in an on-chain key directory, smart-contract registry, "
         "or referencing them via script hashes—would substantially alter and reduce this overhead. "
-        "Furthermore, Bitcoin script lacks native RSA verification opcodes; supporting RSA natively on-chain would require consensus protocol hard or soft forks. "
-        "Similarly, native Ethereum Externally Owned Account (EOA) transaction authorization mandates ECDSA over secp256k1 [11]. "
+        "Similarly, native Ethereum Externally Owned Account (EOA) transaction authorization mandates ECDSA over secp256k1 [13]. "
         "In network-level transaction envelopes (legacy, EIP-2930, and EIP-1559), Ethereum serializes signatures as discrete Recursive Length Prefix (RLP) fields "
         "encoding r, s, and v (or yParity for typed envelopes). While off-chain systems commonly concatenate these into a 65-byte r||s||v string, "
         "ERC-2098 also defines a compact 64-byte representation that packs yParity into the upper bit of s. "
@@ -405,7 +408,7 @@ def generate_report():
         "extract the encoded message, and validate hash/padding integrity. For native transaction envelopes, consensus rules strictly require ECC. "
         "In contrast, BIP 340 Schnorr signatures over secp256k1 integrated via BIP 341 (Taproot) are exactly 64 bytes under SIGHASH_DEFAULT "
         "(or 65 bytes when an explicit non-default sighash byte is appended), paired with 32-byte x-only public keys, and enable two-round multi-signature "
-        "aggregation via MuSig2 (BIP 327 [7]), allowing n-of-n signers to publish a single compact 64-byte signature on-chain—a capability unattainable with standard RSA."
+        "aggregation via MuSig2 (BIP 327 [10]), allowing n-of-n signers to publish a single compact 64-byte signature on-chain—a capability unattainable with standard RSA."
     )
 
     add_h2("3.2 The Operational Value of RSA in Off-Chain Systems")
@@ -419,10 +422,12 @@ def generate_report():
         "the private key is algebraically exposed. While RSA-PSS eliminates scalar nonce leakage, it does not remove all side-channel risks: "
         "implementations must employ base blinding (randomizing the base integer with a secret factor r prior to modular exponentiation: x' = x · r^e mod n) "
         "to mitigate timing side-channel attacks. Crucially, blinding alone does not prevent hardware fault injection such as the Bellcore attack on Chinese Remainder "
-        "Theorem (CRT) implementations (where an induced fault during one prime exponentiation yields gcd(s − s′, n) ∈ {p, q}, revealing a nontrivial factor "
-        "of n = p × q depending on which CRT branch remains correct, with s denoting the correct signature and s′ denoting the faulty signature); defending against "
-        "CRT fault attacks requires separate countermeasures, such as post-computation signature verification (confirming s^e mod n == m before releasing the signature) "
-        "or redundant fault-detection hardware."
+        "Theorem (CRT) implementations [7]. In CRT-based signing, the signer computes s_p = m^(d_p) mod p and s_q = m^(d_q) mod q, where m = OS2IP(EM) is the integer "
+        "message representative produced by EMSA-PSS-ENCODE(M) (RFC 8017 Section 8.1 / 9.1 [2]). If an induced hardware fault corrupts s_q into s'_q while s_p remains uncorrupted, "
+        "the resulting faulty signature s' satisfies s' ≡ s (mod p) and s' ≢ s (mod q). Consequently, gcd(s − s′, n) = p. Conversely, if s_p is faulted, the greatest common divisor yields q. "
+        "Thus, gcd(s − s′, n) ∈ {p, q}, revealing a nontrivial prime factor of n = p · q from a single faulty signature. Defending against CRT fault attacks requires separate countermeasures: "
+        "specifically, post-computation signature verification—where the signer verifies the recovered representative m' = (s^e mod n) against the correct EMSA-PSS encoded message representative "
+        "m = OS2IP(EM) and confirms EMSA-PSS encoding consistency before releasing s—or redundant fault-detection circuitry."
     )
 
     # -------------------------------------------------------------
@@ -432,8 +437,9 @@ def generate_report():
     p = add_p()
     p.add_run(
         "We design and evaluate an educational, off-chain architecture: Using RSA-PSS Digital Signatures to Authenticate Off-Chain Withdrawal Requests in Cryptocurrency Exchanges. "
-        "Important Technical Boundary: This system operates strictly off-chain within the exchange's internal authorization boundary to authenticate withdrawal requests "
-        "before they reach hot-wallet signers; it does not replace on-chain ECDSA/Schnorr consensus signatures on Bitcoin or Ethereum."
+        "Important Technical Boundary: The proposed educational architecture operates strictly off-chain within an internal authorization boundary to authenticate withdrawal requests "
+        "before they reach hot-wallet signers; it does not replace on-chain ECDSA/Schnorr consensus signatures on Bitcoin or Ethereum, nor does it represent the proprietary architecture "
+        "of any specific commercial exchange."
     )
 
     add_h2("4.1 Architecture and Component Decomposition")
@@ -452,17 +458,17 @@ def generate_report():
         p_img = add_p(space_before=0.8, space_after=0.4, align=WD_ALIGN_PARAGRAPH.CENTER)
         p_img.paragraph_format.keep_with_next = True
         r_img = p_img.add_run()
-        r_img.add_picture(str(arch_img), width=Inches(3.35))
+        r_img.add_picture(str(arch_img), width=Inches(3.30))
         p_cap = add_p(space_before=0.4, space_after=1.2, align=WD_ALIGN_PARAGRAPH.CENTER)
         p_cap.paragraph_format.keep_with_next = True
         r_cap = p_cap.add_run("Figure 2. Proposed off-chain cryptocurrency withdrawal authentication architecture using RSA-PSS.")
-        r_cap.font.size = Pt(8)
+        r_cap.font.size = Pt(7.8)
         r_cap.italic = True
 
     # Move Section 4.2 and Algorithm 1 together to Page 4
     doc.add_page_break()
     add_h2("4.2 Deterministic JSON Serialization and Pipeline Algorithm")
-    p = add_p(space_before=0, space_after=0.4, line_spacing=1.01)
+    p = add_p(space_before=0, space_after=0.2, line_spacing=1.0)
     p.add_run(
         "Cryptographic signature verification fails if distributed microservices serialize JSON keys or whitespace inconsistently. "
         "Our system implements deterministic JSON serialization (sorting dictionary keys lexicographically, eliminating whitespace, and encoding to UTF-8). "
@@ -477,45 +483,46 @@ def generate_report():
     trPr.append(parse_xml(f'<w:cantSplit {nsdecls("w")}/>'))
     cell_code = tbl_code.cell(0, 0)
     set_cell_background(cell_code, "F8F9FA")
-    set_cell_margins(cell_code, top=14, bottom=14, left=35, right=35)
+    set_cell_margins(cell_code, top=8, bottom=8, left=25, right=25)
     p_code = cell_code.paragraphs[0]
     p_code.alignment = WD_ALIGN_PARAGRAPH.LEFT
     p_code.paragraph_format.space_before = Pt(0)
     p_code.paragraph_format.space_after = Pt(0)
-    p_code.paragraph_format.line_spacing = 1.01
+    p_code.paragraph_format.line_spacing = 1.0
     p_code.paragraph_format.keep_together = True
     r_code = p_code.add_run(
         "Algorithm 1: Off-Chain Withdrawal Authentication Pipeline\n"
         "Input:  Request R = {id, net, addr, amt_atomic, nonce, ts}, Private Key SK_rsa, Public Key PK_rsa\n"
         "Output: Decision ∈ {ACCEPT, REJECT_SIG, REJECT_REPLAY, REJECT_EXPIRED}\n"
         "1:  M_canon ← DeterministicJSON(R)                      // Lexicographical keys, compact separators, UTF-8\n"
-        "2:  σ ← RSASSA-PSS-Sign(SK_rsa, M_canon, SHA-256, sLen=32)\n"
-        "3:  // Gateway Verification Phase\n"
-        "4:  valid_sig ← RSASSA-PSS-Verify(PK_rsa, M_canon, σ, SHA-256, sLen=32)\n"
-        "5:  if ¬ valid_sig then return REJECT_SIG                 // Tampering detected\n"
-        "6:  if |CurrentTime() − R.ts| > Δ_skew then return REJECT_EXPIRED\n"
-        "7:  if R.nonce ∈ NonceStore then return REJECT_REPLAY     // Replay detected\n"
-        "8:  NonceStore.Add(R.nonce); return ACCEPT"
+        "2:  EM ← EMSA-PSS-ENCODE(M_canon, emBits=2047, sLen=32) // RFC 8017 PSS encoding\n"
+        "3:  σ ← RSASP1(SK_rsa, OS2IP(EM))                       // Signature generation\n"
+        "4:  // Gateway Verification Phase\n"
+        "5:  valid_sig ← RSASSA-PSS-Verify(PK_rsa, M_canon, σ, SHA-256, sLen=32)\n"
+        "6:  if ¬ valid_sig then return REJECT_SIG                 // Tampering detected\n"
+        "7:  if |CurrentTime() − R.ts| > Δ_skew then return REJECT_EXPIRED\n"
+        "8:  if R.nonce ∈ NonceStore then return REJECT_REPLAY     // Replay detected\n"
+        "9:  NonceStore.Add(R.nonce); return ACCEPT"
     )
     r_code.font.name = 'Consolas'
-    r_code.font.size = Pt(7.2)
+    r_code.font.size = Pt(7.0)
 
     add_h2("4.3 Prototype Scope and Vital Security Considerations")
-    p = add_p(space_before=0, space_after=0.4, line_spacing=1.01)
+    p = add_p(space_before=0, space_after=0.2, line_spacing=1.0)
     p.add_run(
-        "To maintain academic defensibility, the prototype implementation scope must be clearly delineated from production requirements:\n"
-        "1. In-Memory Demonstration vs. Distributed Persistence: The prototype stores processed nonces in an in-memory Python set. "
-        "A production cryptocurrency exchange requires a durable, transactional, distributed datastore (e.g., Redis or an ACID SQL database) to prevent replays across service restarts and distributed clusters.\n"
-        "2. Key Storage: Prototype private keys are held in process memory. Production deployments require storage in dedicated HSMs or cloud key management enclaves.\n"
-        "3. Integrity vs. Confidentiality: RSA digital signatures guarantee payload integrity and authenticity, but do not provide confidentiality. "
-        "Transport encryption (TLS 1.3) remains mandatory to prevent payload eavesdropping."
+        "To maintain academic defensibility, the prototype implementation scope must be clearly delineated from production requirements: "
+        "(1) Stateful Replay Prevention: The prototype stores processed nonces in an in-memory Python set, whereas production systems require an ACID-compliant, distributed datastore (e.g., Redis cluster or SQL database with TTL expiry) to prevent replays across horizontal microservice restarts. "
+        "(2) Address and Validation Logic: Address checking is a prototype-level format sanity check (verifying 0x hex prefix and length), whereas production gateways require full checksum validation (EIP-55 for Ethereum, Bech32/Bech32m for Bitcoin) alongside business-tier balance checks, withdrawal thresholds, and AML screening. "
+        "(3) Serialization Scope: The payload serializer applies deterministic key sorting and compact UTF-8 encoding; it does not implement full RFC 8785 (JCS) compliance. "
+        "(4) Key Lifecycle and Trust: The verifier operates on pre-provisioned trusted public keys without a complete PKI, automated certificate path validation, revocation (CRLs/OCSP), or automated key rotation. "
+        "(5) Key Custody: Signing private keys reside in process memory for educational demonstration, whereas production gateways mandate dedicated hardware custody within FIPS 140-2/3 Level 3 HSMs or secure enclaves."
     )
 
     # -------------------------------------------------------------
     # SECTION 5: EXPERIMENTAL RESULTS AND ANALYSIS
     # -------------------------------------------------------------
     add_h1("5. Experimental Results and Analysis")
-    p = add_p(space_before=0, space_after=0.4, line_spacing=1.01)
+    p = add_p(space_before=0, space_after=0.2, line_spacing=1.0)
     p.add_run(
         "The system was implemented in Python 3.15 using the cryptography library (v50.0.2) backed by OpenSSL 4.0.3. "
         "Experiments were executed on an AMD Ryzen 5 7520U processor (4 cores, 8 threads @ 2.80 GHz) running Windows 11 Build 26200. "
@@ -524,39 +531,39 @@ def generate_report():
     )
 
     add_h2("5.1 Adversarial Security Testing Scenarios")
-    p = add_p(space_before=0, space_after=0.4, line_spacing=1.01)
+    p = add_p(space_before=0, space_after=0.2, line_spacing=1.0)
     p.add_run(
-        "Execution of rsa_pss_experiment.py validated all five target security scenarios:\n"
-        "• Scenario 1 (Valid Request): Authentic request (12.5 ETH in atomic units) verified and validated -> Outcome: ACCEPTED.\n"
-        "• Scenario 2 (Tampered Amount): Amount modified to 50.0 ETH equivalent; signature verification returned False -> Outcome: REJECTED.\n"
-        "• Scenario 3 (Tampered Recipient): Address modified to attacker account; verification returned False -> Outcome: REJECTED.\n"
-        "• Scenario 4 (Rogue Public Key): Signature evaluated against an unauthorized RSA public key -> Outcome: REJECTED.\n"
-        "• Scenario 5 (Replay Attack): Identical request resubmitted. Cryptographic verification passed (True), but the validation engine "
-        "detected duplicate nonce 'a8f9c10e-8215-4c07-b649-1d2e3f4a5b6c' -> Outcome: REJECTED BY APPLICATION STATE ENGINE."
+        "Execution of rsa_pss_experiment.py validated all five target security scenarios: "
+        "(1) Scenario 1 (Valid Request): Authentic request (12.5 ETH in atomic units) verified and validated -> Outcome: ACCEPTED; "
+        "(2) Scenario 2 (Tampered Amount): Amount modified to 50.0 ETH equivalent; signature verification returned False -> Outcome: REJECTED; "
+        "(3) Scenario 3 (Tampered Recipient): Address modified to attacker account; verification returned False -> Outcome: REJECTED; "
+        "(4) Scenario 4 (Rogue Public Key): Signature evaluated against an unauthorized RSA public key -> Outcome: REJECTED; "
+        "(5) Scenario 5 (Replay Attack): Identical request resubmitted; cryptographic signature verified (True), but duplicate nonce 'a8f9c10e-8215-4c07-b649-1d2e3f4a5b6c' was intercepted -> Outcome: REJECTED BY APPLICATION STATE ENGINE."
     )
 
-    add_h2("5.2 Expanded Wycheproof Test Suite Validation")
-    p = add_p(space_before=0, space_after=0.4, line_spacing=1.01)
+    add_h2("5.2 Bundled Wycheproof Test Suite Validation")
+    p = add_p(space_before=0, space_after=0.2, line_spacing=1.0)
     p.add_run(
-        "To evaluate implementation compliance against authoritative test vectors, our test harness loaded and executed the complete "
-        "Google Project Wycheproof test suite (rsa_pss_2048_sha256_mgf1_32_test.json) [12]. "
+        "To evaluate implementation compliance against authoritative test vectors, our test harness loaded and executed the bundled "
+        "RSA-PSS 2048-bit SHA-256/MGF1-SHA256 Wycheproof test-vector set (version 0.9 snapshot, 108 cases) (rsa_pss_2048_sha256_mgf1_32_test.json) [14]. "
         "The suite comprises 108 test vectors: 63 expected-valid signatures and 45 expected-invalid signatures. "
         "Our verification engine successfully passed all 108 test cases (100% agreement, 0 failures), correctly accepting every valid signature "
-        "and rejecting all corrupted or edge-case invalid signatures. This validates the implementation against the specific Wycheproof test cases, "
-        "without claiming exhaustive mathematical proof of all possible RFC 8017 edge cases."
+        "and rejecting all corrupted or edge-case invalid signatures. This validates the implementation against the specific bundled Wycheproof test cases, "
+        "representing a selected verification test set rather than exhaustive mathematical proof of all possible RFC 8017 edge cases. "
+        "(The current upstream C2SP repository contains an expanded number of cases; the bundled v0.9 snapshot is preserved for experimental reproducibility)."
     )
 
     add_h2("5.3 Empirical Benchmarking and Performance Analysis")
-    p = add_p(space_before=0, space_after=0.4, line_spacing=1.01)
+    p = add_p(space_before=0, space_after=0.2, line_spacing=1.0)
     p.add_run(
-        "Table 2 reports empirical benchmarks comparing RSA configurations with ECDSA (secp256k1). Figure 3 illustrates the latency distributions."
+        "Table 2 reports empirical benchmarks comparing RSA configurations with ECDSA (secp256k1). Figure 3 illustrates the median latency comparison."
     )
 
     # Table 2 Caption (Standard academic placement directly above table)
-    p_b_cap = add_p(space_before=0.4, space_after=0.4, align=WD_ALIGN_PARAGRAPH.CENTER)
+    p_b_cap = add_p(space_before=0.2, space_after=0.2, align=WD_ALIGN_PARAGRAPH.CENTER)
     p_b_cap.paragraph_format.keep_with_next = True
     r_bc = p_b_cap.add_run("Table 2. Empirical benchmark measurements (AMD Ryzen 5 7520U, Python 3.15, OpenSSL 4.0.3, median of 10 keygen / 100 crypto trials).")
-    r_bc.font.size = Pt(7.6)
+    r_bc.font.size = Pt(7.4)
     r_bc.italic = True
 
     # TABLE 2: BENCHMARK RESULTS (LOADED DIRECTLY FROM ACTIVE CSV)
@@ -567,24 +574,24 @@ def generate_report():
         trPr = row_obj._tr.get_or_add_trPr()
         trPr.append(parse_xml(f'<w:cantSplit {nsdecls("w")}/>'))
 
-    b_headers = ["Algorithm", "NIST Security", "Keygen Median", "Sign Median", "Verify Median", "Sig Size", "Internal Asymmetry"]
+    b_headers = ["Algorithm", "Security Level", "Keygen Median", "Sign Median", "Verify Median", "Sig Size", "Internal Asymmetry"]
     for j, h in enumerate(b_headers):
         cell = tbl_bench.cell(0, j)
         set_cell_background(cell, "E8EAF6")
-        set_cell_margins(cell, top=8, bottom=8, left=16, right=16)
+        set_cell_margins(cell, top=5, bottom=5, left=12, right=12)
         p_c = cell.paragraphs[0]
         p_c.alignment = WD_ALIGN_PARAGRAPH.CENTER
         p_c.paragraph_format.space_before = Pt(0)
         p_c.paragraph_format.space_after = Pt(0)
         r = p_c.add_run(h)
         r.bold = True
-        r.font.size = Pt(7.5)
+        r.font.size = Pt(7.2)
 
     bench_rows = [
-        ["RSA-2048", f"{r2048['security_strength_bits']} bits [4]", f"{r2048['keygen_median_ms']} ms", f"{r2048['sign_median_ms']} ms", f"{r2048['verify_median_ms']} ms", f"{r2048['signature_length_bytes']} B", f"{r2048['internal_asymmetry_ratio']}x (Sign / Verify)"],
-        ["RSA-3072", f"{r3072['security_strength_bits']} bits [4]", f"{r3072['keygen_median_ms']} ms", f"{r3072['sign_median_ms']} ms", f"{r3072['verify_median_ms']} ms", f"{r3072['signature_length_bytes']} B", f"{r3072['internal_asymmetry_ratio']}x (Sign / Verify)"],
-        ["RSA-4096", f"{r4096['security_strength_bits']} bits [4]", f"{r4096['keygen_median_ms']} ms", f"{r4096['sign_median_ms']} ms", f"{r4096['verify_median_ms']} ms", f"{r4096['signature_length_bytes']} B", f"{r4096['internal_asymmetry_ratio']}x (Sign / Verify)"],
-        ["ECDSA-secp256k1", f"{ecdsa['security_strength_bits']} bits [5]", f"{ecdsa['keygen_median_ms']} ms", f"{ecdsa['sign_median_ms']} ms", f"{ecdsa['verify_median_ms']} ms", f"{ecdsa['signature_length_bytes']} B (DER)", f"{ecdsa['internal_asymmetry_ratio']}x (Sign / Verify)"]
+        ["RSA-2048", f"{r2048['security_strength_bits']} bits [5]", f"{r2048['keygen_median_ms']} ms", f"{r2048['sign_median_ms']} ms", f"{r2048['verify_median_ms']} ms", f"{r2048['signature_length_bytes']} B", f"{r2048['internal_asymmetry_ratio']}x (Sign / Verify)"],
+        ["RSA-3072", f"{r3072['security_strength_bits']} bits [5]", f"{r3072['keygen_median_ms']} ms", f"{r3072['sign_median_ms']} ms", f"{r3072['verify_median_ms']} ms", f"{r3072['signature_length_bytes']} B", f"{r3072['internal_asymmetry_ratio']}x (Sign / Verify)"],
+        ["RSA-4096", f"{r4096['security_strength_bits']} bits [5]", f"{r4096['keygen_median_ms']} ms", f"{r4096['sign_median_ms']} ms", f"{r4096['verify_median_ms']} ms", f"{r4096['signature_length_bytes']} B", f"{r4096['internal_asymmetry_ratio']}x (Sign / Verify)"],
+        ["ECDSA-secp256k1", f"~{ecdsa['security_strength_bits']} bits [6]", f"{ecdsa['keygen_median_ms']} ms", f"{ecdsa['sign_median_ms']} ms", f"{ecdsa['verify_median_ms']} ms", f"{ecdsa['signature_length_bytes']} B (DER sample)", f"{ecdsa['internal_asymmetry_ratio']}x (Sign / Verify)"]
     ]
 
     for i, row in enumerate(bench_rows):
@@ -592,43 +599,45 @@ def generate_report():
             cell = tbl_bench.cell(i+1, j)
             if i % 2 == 1:
                 set_cell_background(cell, "F9FAFB")
-            set_cell_margins(cell, top=6, bottom=6, left=16, right=16)
+            set_cell_margins(cell, top=4, bottom=4, left=12, right=12)
             p_c = cell.paragraphs[0]
             p_c.alignment = WD_ALIGN_PARAGRAPH.CENTER
             p_c.paragraph_format.space_before = Pt(0)
             p_c.paragraph_format.space_after = Pt(0)
             r = p_c.add_run(val)
-            r.font.size = Pt(7.3)
+            r.font.size = Pt(7.0)
 
     # Figure 3: Benchmark Chart
     bench_img = FIG_DIR / "benchmark_performance.png"
     if bench_img.exists():
-        p_img = add_p(space_before=0.5, space_after=0.2, align=WD_ALIGN_PARAGRAPH.CENTER)
+        p_img = add_p(space_before=0.4, space_after=0.2, align=WD_ALIGN_PARAGRAPH.CENTER)
         p_img.paragraph_format.keep_with_next = True
         r_img = p_img.add_run()
-        r_img.add_picture(str(bench_img), width=Inches(3.0))
-        p_cap = add_p(space_before=0.2, space_after=0.6, align=WD_ALIGN_PARAGRAPH.CENTER)
+        r_img.add_picture(str(bench_img), width=Inches(2.95))
+        p_cap = add_p(space_before=0.2, space_after=0.5, align=WD_ALIGN_PARAGRAPH.CENTER)
         p_cap.paragraph_format.keep_with_next = True
-        r_cap = p_cap.add_run("Figure 3. Empirical latency distributions for RSA and ECDSA key generation, signing, and verification.")
-        r_cap.font.size = Pt(8)
+        r_cap = p_cap.add_run("Figure 3. Empirical median latency comparison for RSA and ECDSA key generation, signing, and verification.")
+        r_cap.font.size = Pt(7.8)
         r_cap.italic = True
 
-    p = add_p(space_before=0, space_after=0.5, line_spacing=1.01)
+    p = add_p(space_before=0, space_after=0.4, line_spacing=1.01)
     p.add_run(
         "The empirical measurements demonstrate three decisive performance characteristics:\n"
         f"1. RSA Asymmetric Cost Structure: RSA displays a pronounced internal asymmetry: verification is {r2048['internal_asymmetry_ratio']}x (RSA-2048) to {r4096['internal_asymmetry_ratio']}x (RSA-4096) faster than its own signing operation. "
         "Because public exponent e = 65,537 contains only two non-zero bits, verification requires just 17 multiplications, whereas private exponent d requires full modular exponentiation.\n"
-        f"2. Head-to-Head Comparison with ECDSA: Comparing equivalent 128-bit security levels (RSA-3072 vs. ECDSA-secp256k1), ECDSA signing is {ratio_sign_ec}x faster than RSA signing ({ecdsa['sign_median_ms']} ms vs {r3072['sign_median_ms']} ms), "
-        f"and ECDSA key generation is over {ratio_kg_ec}x faster ({ecdsa['keygen_median_ms']} ms vs {r3072['keygen_median_ms']} ms). Conversely, RSA-3072 signature verification ({r3072['verify_median_ms']} ms) is {ratio_3072_ec}x faster than ECDSA verification ({ecdsa['verify_median_ms']} ms), "
-        f"while RSA-2048 verification ({r2048['verify_median_ms']} ms) is {ratio_2048_ec}x faster, and RSA-4096 verification ({r4096['verify_median_ms']} ms) is {ratio_4096_ec}x faster than ECDSA. ECDSA verification requires two elliptic-curve point multiplications, whereas RSA verification requires minimal modular arithmetic.\n"
-        f"3. Theoretical Throughput: At {r3072['verify_median_ms']} ms per verification, a single CPU core can theoretically evaluate ~{int(1000/r3072_ver_ms):,d} RSA-3072 signatures per second (vs ~{int(1000/ecdsa_ver_ms):,d} for ECDSA). "
-        "Crucially, these figures represent theoretical cryptographic-operation estimates; real-world system throughput is bounded by network I/O, database persistence, and TLS handshakes."
+        f"2. Head-to-Head Comparison with ECDSA: Comparing equivalent 128-bit classical security levels (RSA-3072 vs. ECDSA-secp256k1), ECDSA signing is {ratio_sign_ec}x faster than RSA signing ({ecdsa['sign_median_ms']} ms vs {r3072['sign_median_ms']} ms), "
+        f"and ECDSA key generation is over {ratio_kg_ec}x faster ({ecdsa['keygen_median_ms']} ms vs {r3072['keygen_median_ms']} ms). Conversely, RSA-3072 signature verification ({r3072['verify_median_ms']} ms) is {ratio_3072_ec}x faster than ECDSA verification ({ecdsa['verify_median_ms']} ms). "
+        f"While RSA-2048 verification ({r2048['verify_median_ms']} ms) is {ratio_2048_ec}x faster and RSA-4096 ({r4096['verify_median_ms']} ms) is {ratio_4096_ec}x faster than ECDSA, these represent 112-bit and 152-bit security levels rather than equivalent-strength comparisons. "
+        "Measured ECDSA DER signatures averaged 71 bytes (ranging between 70–72 bytes in practice due to ASN.1 encoding). "
+        "These performance ratios are specific to the measured Python 3.15 / OpenSSL 4.0.3 execution environment on the AMD Ryzen 5 7520U processor; relative performance may vary across different CPU instruction sets (such as AVX-512) and compiled cryptographic libraries.\n"
+        f"3. Isolated Operation Latency vs Gateway Throughput: At {r3072['verify_median_ms']} ms per verification, a single CPU core can theoretically evaluate ~{int(1000/r3072_ver_ms):,d} RSA-3072 signatures per second (vs ~{int(1000/ecdsa_ver_ms):,d} for ECDSA). "
+        "Crucially, these figures represent isolated cryptographic operation timings, not an end-to-end exchange gateway throughput benchmark; real-world system throughput is bounded by network I/O, database persistence, and TLS handshakes."
     )
 
     # -------------------------------------------------------------
     # SECTION 6: CONCLUSION
     # -------------------------------------------------------------
-    p_h6 = add_p(space_before=1.8, space_after=0.4, line_spacing=1.02, align=WD_ALIGN_PARAGRAPH.LEFT)
+    p_h6 = add_p(space_before=1.5, space_after=0.3, line_spacing=1.01, align=WD_ALIGN_PARAGRAPH.LEFT)
     p_h6.paragraph_format.keep_with_next = True
     r_h6 = p_h6.add_run("6. Conclusion")
     r_h6.bold = True
@@ -636,19 +645,19 @@ def generate_report():
     r_h6.font.size = Pt(11.0)
     r_h6.font.color.rgb = RGBColor(26, 35, 126)
 
-    p = add_p(space_before=0, space_after=0.5, line_spacing=1.01)
+    p = add_p(space_before=0, space_after=0.4, line_spacing=1.01)
     p.add_run(
         "This research examined the cryptographic foundations, operational trade-offs, and practical deployment of RSA in modern security architectures. "
         "While elliptic-curve cryptography (ECDSA and Schnorr) rightfully dominates public blockchain consensus layers due to compact public keys and signatures that "
         "minimize transaction virtual size (reducing Bitcoin miner fees) and storage serialization (reducing Ethereum transaction execution and data gas overhead), "
         "RSA is not universally superior or inferior to ECC; rather, each algorithm serves distinct architectural domains. "
-        "RSA remains a supported and deployed cryptographic option in enterprise PKI and selected off-chain authentication systems, "
-        "particularly where existing infrastructure, interoperability, and verification performance are relevant. "
+        "RSA remains a supported and deployed cryptographic option in enterprise PKI and can be deployed in selected off-chain authentication systems, "
+        "particularly where existing infrastructure, interoperability, and asymmetric verification throughput are advantageous. "
         "Our prototype implementation of an off-chain withdrawal authentication system confirmed that RSA-PSS with SHA-256 provides verifiable message integrity with rapid gateway verification. "
         "However, cryptographic digital signatures alone do not guarantee complete system security; robust authorization requires defense-in-depth across deterministic serialization, "
         "stateful replay prevention, secure key custody (such as HSM storage), and transport encryption (TLS 1.3)."
     )
-    p = add_p(space_before=0, space_after=0.5, line_spacing=1.01)
+    p = add_p(space_before=0, space_after=0.4, line_spacing=1.01)
     p.add_run(
         "At an approximately equivalent 128-bit classical security strength, RSA-3072 provides robust resistance against conventional mathematical cryptanalysis, "
         "though it incurs substantially larger key and signature footprints than 256-bit elliptic curves. "
@@ -661,7 +670,7 @@ def generate_report():
     # -------------------------------------------------------------
     # SECTION 7: REFERENCES
     # -------------------------------------------------------------
-    p_h7 = add_p(space_before=1.5, space_after=0.3, line_spacing=1.02, align=WD_ALIGN_PARAGRAPH.LEFT)
+    p_h7 = add_p(space_before=1.4, space_after=0.3, line_spacing=1.01, align=WD_ALIGN_PARAGRAPH.LEFT)
     p_h7.paragraph_format.keep_with_next = True
     r_h7 = p_h7.add_run("7. References")
     r_h7.bold = True
@@ -670,18 +679,20 @@ def generate_report():
     r_h7.font.color.rgb = RGBColor(26, 35, 126)
 
     refs = [
-        "[1] K. Moriarty, B. Kaliski, J. Jonsson, and A. Rusch, \"PKCS #1: RSA Cryptography Specifications Version 2.2,\" RFC 8017, IETF, Nov. 2016. https://www.rfc-editor.org/rfc/rfc8017",
-        "[2] E. Rescorla, \"The Transport Layer Security (TLS) Protocol Version 1.3,\" RFC 8446, IETF, Aug. 2018. https://www.rfc-editor.org/rfc/rfc8446",
-        "[3] National Institute of Standards and Technology (NIST), \"Digital Signature Standard (DSS),\" FIPS 186-5, Feb. 2023. https://csrc.nist.gov/pubs/fips/186-5/final",
-        "[4] E. Barker and L. Chen, \"Recommendation for Pair-Wise Key-Establishment Schemes Using Integer Factorization Cryptography,\" NIST SP 800-56B Rev. 2, Table 2 & App. D, Mar. 2019. https://csrc.nist.gov/pubs/sp/800/56b/r2/final",
-        "[5] E. Barker, \"Recommendation for Key Management: Part 1 – General,\" NIST SP 800-57 Part 1 Rev. 5, May 2020. https://csrc.nist.gov/pubs/sp/800/57/pt1/r5/final",
-        "[6] P. Wuille, J. Nick, and T. Ruffing, \"Schnorr Signatures for secp256k1,\" Bitcoin Improvement Proposal (BIP) 340, Jan. 2020. https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki",
-        "[7] J. Nick, T. Ruffing, and E. Jin, \"MuSig2 for BIP340-compatible Multi-Signatures,\" Bitcoin Improvement Proposal (BIP) 327, 2023. https://github.com/bitcoin/bips/blob/master/bip-0327.mediawiki",
-        "[8] E. Lombrozo, J. Lau, and P. Wuille, \"Segregated Witness (Consensus layer),\" Bitcoin Improvement Proposal (BIP) 141, Dec. 2015. https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki",
-        "[9] S. Josefsson and I. Liusvaara, \"Edwards-Curve Digital Signature Algorithm (EdDSA),\" RFC 8032, IETF, Jan. 2017. https://www.rfc-editor.org/rfc/rfc8032",
-        "[10] Bitcoin Core Developers, \"Bitcoin Developer Guide: Transactions,\" Bitcoin Project, n.d. [Online; accessed 2026]. https://developer.bitcoin.org/devguide/transactions.html",
-        "[11] Ethereum Foundation, \"Ethereum Developer Documentation: Transactions and Cryptographic Signatures,\" n.d. [Online; accessed 2026]. https://ethereum.org/en/developers/docs/transactions/",
-        "[12] Google Security Research, \"Project Wycheproof: Cryptographic Test Vectors for Asymmetric Algorithms,\" GitHub repository, n.d. [Online; accessed 2026]. https://github.com/google/wycheproof"
+        "[1] R. L. Rivest, A. Shamir, and L. Adleman, \"A method for obtaining digital signatures and public-key cryptosystems,\" Communications of the ACM, vol. 21, no. 2, pp. 120–126, Feb. 1978 (MIT/LCS/TM-82, Apr. 1977). https://doi.org/10.1145/359340.359342",
+        "[2] K. Moriarty, B. Kaliski, J. Jonsson, and A. Rusch, \"PKCS #1: RSA Cryptography Specifications Version 2.2,\" RFC 8017, IETF, Nov. 2016. https://www.rfc-editor.org/rfc/rfc8017",
+        "[3] E. Rescorla, \"The Transport Layer Security (TLS) Protocol Version 1.3,\" RFC 9846, IETF, Nov. 2026. https://www.rfc-editor.org/rfc/rfc9846",
+        "[4] National Institute of Standards and Technology (NIST), \"Digital Signature Standard (DSS),\" Federal Information Processing Standards Publication (FIPS) 186-5, Feb. 2023. https://doi.org/10.6028/NIST.FIPS.186-5",
+        "[5] E. Barker, L. Chen, A. Roginsky, A. Vassilev, and R. Davis, \"Recommendation for Pair-Wise Key-Establishment Schemes Using Integer Factorization Cryptography,\" NIST Special Publication (SP) 800-56B Rev. 2, Mar. 2019. https://doi.org/10.6028/NIST.SP.800-56Br2",
+        "[6] E. Barker, \"Recommendation for Key Management: Part 1 – General,\" NIST Special Publication (SP) 800-57 Part 1 Rev. 5, May 2020. https://doi.org/10.6028/NIST.SP.800-57pt1r5",
+        "[7] D. Boneh, R. A. DeMillo, and R. J. Lipton, \"On the importance of eliminating errors in cryptographic computations,\" Journal of Cryptology, vol. 14, no. 2, pp. 101–119, 2001. https://doi.org/10.1007/s001450010016",
+        "[8] P. Wuille, J. Nick, and T. Ruffing, \"Schnorr Signatures for secp256k1,\" Bitcoin Improvement Proposal (BIP) 340, Jan. 2020. https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki",
+        "[9] E. Lombrozo, J. Lau, and P. Wuille, \"Segregated Witness (Consensus layer),\" Bitcoin Improvement Proposal (BIP) 141, Dec. 2015. https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki",
+        "[10] J. Nick, T. Ruffing, and E. Jin, \"MuSig2 for BIP340-compatible Multi-Signatures,\" Bitcoin Improvement Proposal (BIP) 327, 2023. https://github.com/bitcoin/bips/blob/master/bip-0327.mediawiki",
+        "[11] S. Josefsson and I. Liusvaara, \"Edwards-Curve Digital Signature Algorithm (EdDSA),\" RFC 8032, IETF, Jan. 2017. https://www.rfc-editor.org/rfc/rfc8032",
+        "[12] Bitcoin Core Developers, \"Bitcoin Developer Guide: Transactions,\" Bitcoin Project, n.d. [Online; accessed 2026]. https://developer.bitcoin.org/devguide/transactions.html",
+        "[13] Ethereum Foundation, \"Ethereum Developer Documentation: Transactions and Cryptographic Signatures,\" n.d. [Online; accessed 2026]. https://ethereum.org/en/developers/docs/transactions/",
+        "[14] Google Security Research, \"Project Wycheproof: Cryptographic Test Vectors for Asymmetric Algorithms,\" GitHub repository (v0.9 snapshot), n.d. [Online; accessed 2026]. https://github.com/google/wycheproof"
     ]
 
     for ref in refs:
@@ -690,7 +701,7 @@ def generate_report():
         p_ref.paragraph_format.first_line_indent = Inches(-0.18)
         r_ref = p_ref.add_run(ref)
         r_ref.font.name = 'Times New Roman'
-        r_ref.font.size = Pt(7.4)
+        r_ref.font.size = Pt(7.3)
 
     out_file = REPORT_DIR / "RSA_Real_World_Applications_Report.docx"
     doc.save(str(out_file))

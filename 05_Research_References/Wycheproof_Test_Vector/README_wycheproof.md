@@ -1,10 +1,10 @@
-# Google Project Wycheproof Test Vectors: RSA-PSS
+# Google Project Wycheproof Test Vectors: RSA-PSS (Bundled Snapshot)
 
 ## Source Information
-- **Repository:** [Google Project Wycheproof](https://github.com/google/wycheproof)
-- **Official Path:** `testvectors_v1/rsa_pss_2048_sha256_mgf1_32_test.json`
-- **Direct Raw URL:** `https://raw.githubusercontent.com/google/wycheproof/master/testvectors_v1/rsa_pss_2048_sha256_mgf1_32_test.json`
+- **Repository Snapshot:** Version 0.9 snapshot of [Google Project Wycheproof](https://github.com/google/wycheproof)
+- **Suite File:** `rsa_pss_2048_sha256_mgf1_32_test.json`
 - **Specification Conformance:** RFC 8017 Section 8.1 / 9.1 (RSASSA-PSS / EMSA-PSS) and NIST FIPS 186-5.
+- **Upstream Project Notice:** The active upstream repository maintained by C2SP contains an expanded number of test vectors; this bundled version 0.9 snapshot (108 test cases: 63 expected-valid, 45 expected-invalid) is preserved unchanged for experimental determinism and academic reproducibility.
 
 ## Test Group Parameters
 - **Algorithm Type:** RSASSA-PSS
@@ -12,14 +12,8 @@
 - **Hash Function:** SHA-256
 - **Mask Generation Function:** MGF1 (SHA-256)
 - **Salt Length (`sLen`):** 32 bytes
+- **Total Test Cases:** 108 (63 expected-valid accepted, 45 expected-invalid rejected)
 
-## Reproduced Test Cases
-1. **`tcId: 1` (Valid Signature):**
-   - Message: `""` (empty byte sequence, testing zero-length hash preimage).
-   - Expected Result: `"valid"`
-   - Evaluation: Successfully verified with OpenSSL 4.0.3 backend in `rsa_pss_experiment.py`.
-2. **Bit Perturbation Test:**
-   - Perturbed the first byte of `tcId: 1` signature via XOR (`sig[0] ^= 0x01`).
-   - Expected Result: `"invalid"` (`InvalidSignature` exception).
-   - Evaluation: Successfully confirmed exact cryptographic rejection.
-
+## Validation Scope
+- Evaluation against this bundled snapshot validates the cryptographic implementation against these specific 108 test vectors.
+- It demonstrates practical compliance with selected edge-case test vectors, but does not claim exhaustive mathematical proof of all theoretical RFC 8017 edge cases.
