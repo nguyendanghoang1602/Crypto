@@ -106,3 +106,59 @@ During development and automated auditing sessions, specific commands returned e
    - *Resolution:* Corrected the column lookup to `row['latency_ms']`. The subsequent execution exited with **code 0**, confirming **100.0% mathematical agreement** across all 840 measurements.
 
 **Conclusion:** None of the non-zero exit codes were caused by failures in the cryptographic implementation, operational test scenarios, or Wycheproof test-vector validations. All cryptographic and test suites execute with exit code 0 and 100% pass rates.
+
+
+---
+
+## 5. Round 3 Final Polish — Cryptographic Technical Corrections & Consistency Audit
+
+During the final technical polishing round (November 2026), six targeted cryptographic issues and documentation alignments were addressed across the repository:
+
+### 5.1 Summary of Targeted Corrections
+
+1. **RFC 8017 Section 8.1 / 9.1 Signing & Verification Sequence (Issue 1):**
+   - *Correction:* Replaced generalized modular expressions ($S = (EM)^d mod n$ and $EM \equiv S^e mod n$) with explicit RFC 8017 primitives:
+     - **Signing:** $EM = \text{EMSA-PSS-ENCODE}(M, \text{emBits} = \text{modBits} - 1)$, $m = \text{OS2IP}(EM)$, $s = \text{RSASP1}(SK, m)$ (via private exponent $d$ or CRT parameters), $S = \text{I2OSP}(s, k)$.
+     - **Verification:** $s = \text{OS2IP}(S)$, $m = \text{RSAVP1}(PK, s) = s^e mod n$, $EM = \text{I2OSP}(m, \text{emLen})$, $\text{EMSA-PSS-VERIFY}(M, EM, \text{emBits})$.
+   - *Technical Rigor:* Emphasized that RSA public-key modular exponentiation ($\text{RSAVP1}$, computing $s^e mod n$) alone does **not** establish signature validity; it merely recovers the integer representative $m$. The verifier must convert $m$ to octet string $EM$ and execute `EMSA-PSS-VERIFY` to inspect `maskedDB`, unmask the randomized salt via MGF1, check padding bytes, and confirm hash consistency.
+   - *Location:* Updated in Section 2.2 of `build_report_doc.py`, `README.md`, and `Research_Sources.md`.
+
+2. **RSA-OAEP Security Reduction & Attribution (Issue 2):**
+   - *Correction:* Refined the theoretical security claims for RSA-OAEP. Distinguished Bellare and Rogaway (1994, which proved IND-CCA1 security for general trapdoor permutations in ROM) from subsequent analyses by Shoup (2001) and Fujisaki, Okamoto, Pointcheval, and Stern (2001, proving IND-CCA2 security in ROM under the RSA partial-domain one-wayness assumption).
+   - *Concrete Reduction:* Clarified that while theoretical IND-CCA2 security is proven in the Random Oracle Model, the concrete security reduction is not tight for practical RSA key lengths.
+   - *Engineering Context:* Maintained the plaintext payload bound $mLen \le k - 2hLen - 2$ (RFC 8017 Section 7.1.1; 190 bytes for RSA-2048 with SHA-256) and deployment in hybrid key transport encapsulating ephemeral 256-bit AES-GCM symmetric keys per NIST SP 800-56B Rev. 2.
+   - *Location:* Updated in Section 2.2 of `build_report_doc.py`, `README.md`, and `Research_Sources.md`.
+
+3. **RFC 8017 Bibliographic Classification (Issue 3):**
+   - *Correction:* Corrected the categorization of RFC 8017 in `Research_Sources.md` and `README.md` from `Standards Track` to `Informational` (published November 2016 as an Informational RFC by the IETF).
+   - *Location:* Updated in `Research_Sources.md` [2] and `README.md`.
+
+4. **Hardware Security Module (HSM) Deployment Language (Issue 4):**
+   - *Correction:* Calibrated the private-key custody discussion in Section 4.3. Removed the blanket assertion that all production gateways require FIPS 140-2/3 Level 3 HSMs.
+   - *Refined Statement:* Stated that production financial systems deploy appropriately validated HSMs or secure hardware (e.g., FIPS 140-2/3 validated HSMs, cloud HSM services, or secure enclaves) based on the organization's specific threat model, regulatory environment, and institutional key-management policies.
+   - *Location:* Updated in Section 4.3 of `build_report_doc.py`, `README.md`, and `FINAL_REVIEW_NOTES.md`.
+
+5. **Precision on TLS 1.3 Forward Secrecy & Protocol Nuances (Issue 5):**
+   - *Correction:* Added precise architectural nuances to the TLS 1.3 discussion:
+     - Clarified that Forward Secrecy (FS) is guaranteed by ephemeral Diffie-Hellman ((EC)DHE) and PSK-DHE (`psk_dhe_ke`).
+     - Noted that PSK-only mode (`psk_ke`) does not provide Forward Secrecy against compromised pre-shared keys.
+     - Noted that 0-RTT early data lacks Forward Secrecy and is vulnerable to replay attacks.
+     - Noted that post-quantum forward secrecy depends on negotiating a supported hybrid mechanism (RFC 10024).
+     - Reasserted that static RSA key exchange was entirely removed in TLS 1.3, restricting RSA strictly to endpoint authentication (RSA-PSS server auth per RFC 9846, legacy client auth exception per RFC 9963).
+   - *Location:* Updated in Section 2.3 of `build_report_doc.py`, `README.md`, and `Research_Sources.md`.
+
+6. **Bellcore CRT Fault Attack Formulation & RSA-PSS Salt (Issue 6):**
+   - *Correction:* Refined the Bellcore CRT fault attack explanation in Section 3.2:
+     - Clarified that the PSS salt is randomized, but **not a secret** (it is unmasked and checked during verification).
+     - Explained that representative $m = \text{OS2IP}(EM)$ is not deterministically computable from message $M$ alone without knowing the salt, but is recovered from any valid signature via $s^e mod n$.
+     - Delineated the two-signature formulation ($\gcd(s - s', n) \in \{p, q\}$) which directly factors $n$ when a valid signature $s$ is available, from the single-fault formulation ($\gcd((s')^e - m, n) \in \{p, q\}$) which requires the attacker to know $m$.
+     - Reasserted that base blinding ($x' = x \cdot r^e mod n$) mitigates timing side channels, NOT CRT fault attacks. Defending against CRT fault injection requires separate countermeasures: post-computation verification or redundant fault detection.
+   - *Location:* Updated in Section 3.2 of `build_report_doc.py`, `README.md`, and `Research_Sources.md`.
+
+7. **Lecture Slide Reference Materials & Course Alignment:**
+   - *Curriculum Alignment:* Audited all 8 university lecture slide collections: Sessions 1 to 7 form the core course syllabus covering symmetric cryptography, prime fields, modular arithmetic, RSA, hash functions, digital signatures, and ECC. Session 8 provides complementary coverage on MACs, HMAC, and PKI. Notation and formulas ($n = p \cdot q$, $e$, $d$, $\lambda(n)$, $\phi(n)$) were cross-checked and found fully aligned.
+
+8. **Word Layout & Pagination Verification:**
+   - *Rendering Engine:* Kingsoft WPS Office 12.1.0.29162 (active COM provider for `Word.Application`).
+   - *Status:* **Exactly 5 A4 pages** (verified via `doc.ComputeStatistics(2) == 5`).
+   - *Layout Integrity:* Algorithm 1 is unified on Page 4 (`w:cantSplit`, `keep_together`). Table 1 is unified on Page 2. Table 2 is unified on Page 4. Figure 1 on Page 2, Figure 2 on Page 3, Figure 3 on Page 4. All 14 references [1]–[14] conclude cleanly on Page 5.

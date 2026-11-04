@@ -276,16 +276,16 @@ def generate_report():
     p = add_p()
     p.add_run(
         "RSA supports two distinct operational primitives designed for contrasting security goals:\n"
-        "• Asymmetric Encryption (Confidentiality): The sender encrypts plaintext using the recipient's public key (e, n); only the recipient's private key d can decrypt. "
-        "Modern systems employ RSA-OAEP (Optimal Asymmetric Encryption Padding, RFC 8017 Section 7.1 [2]). In the Random Oracle Model (ROM), RSA-OAEP achieves provable IND-CCA2 security "
-        "under the RSA partial-domain one-wayness assumption (Fujisaki et al., 2001; Bellare-Rogaway, 1994), rather than an unconditional standard-model reduction. "
-        "While RSAES-OAEP serves as the underlying asymmetric encryption scheme, its payload size is strictly bounded by mLen <= k - 2hLen - 2 (RFC 8017 Section 7.1.1); "
-        "consequently, industrial architectures deploy it within hybrid encryption for RSA key transport—encapsulating ephemeral symmetric keys (e.g., 256-bit AES-GCM per NIST SP 800-56B Rev. 2 [5]) "
+        "• Asymmetric Encryption (Confidentiality): The sender encrypts plaintext using recipient public key (e, n); only private key d can decrypt. "
+        "Modern systems employ RSA-OAEP (RFC 8017 Section 7.1 [2]). In the Random Oracle Model (ROM), Bellare and Rogaway (1994) originally established IND-CCA1 security for general trapdoor permutations, while Shoup (2001) and Fujisaki et al. (2001) proved IND-CCA2 security under RSA partial-domain one-wayness; however, the concrete security reduction is not tight for practical parameters. "
+        "Because RSAES-OAEP payload size is bounded by mLen <= k - 2hLen - 2 (RFC 8017 Section 7.1.1; 190 bytes for RSA-2048 with SHA-256), "
+        "industrial architectures deploy it within hybrid encryption for RSA key transport—encapsulating ephemeral symmetric keys (e.g., 256-bit AES-GCM per NIST SP 800-56B Rev. 2 [5]) "
         "to secure high-throughput bulk data streaming.\n"
-        "• Digital Signatures (Authenticity, Integrity, Non-Repudiation Evidence): The signer processes message digest M using private key d to produce signature S = (EM)^d mod n. "
-        "Any party possessing public key e verifies that EM ≡ S^e mod n. Under RFC 8017 and NIST FIPS 186-5 [2], [4], RSA-PSS (Probabilistic Signature Scheme) is the state-of-the-art standard. "
-        "PSS incorporates a randomized salt into EMSA-PSS encoding, establishing a tight security reduction to the RSA problem in the Random Oracle Model (EUF-CMA security). "
-        "Crucially, while a digital signature provides cryptographic non-repudiation evidence, full legal non-repudiation requires trusted identity binding, secure key custody, and operational controls.\n"
+        "• Digital Signatures (Authenticity, Integrity, Non-Repudiation Evidence): Under RFC 8017 Section 8.1 / 9.1 and NIST FIPS 186-5 [2], [4], RSA-PSS is the state-of-the-art standard. "
+        "Signing proceeds by encoding digest M via EM = EMSA-PSS-ENCODE(M, emBits = modBits − 1), converting octets to integer m = OS2IP(EM), computing signature representative s = RSASP1(SK, m) (via d or CRT parameters), and formatting signature octets S = I2OSP(s, k). "
+        "Verification parses s = OS2IP(S), applies public modular exponentiation m = RSAVP1(PK, s) = s^e mod n, converts octets EM = I2OSP(m, emLen), and executes EMSA-PSS-VERIFY(M, EM, emBits). "
+        "Crucially, modular exponentiation (RSAVP1) alone does not establish signature validity; EMSA-PSS decoding—unmasking the randomized salt via MGF1, checking padding, and confirming hash consistency—is indispensable. "
+        "PSS achieves a tight security reduction to the RSA problem in the ROM (EUF-CMA). Cryptographic signatures furnish non-repudiation evidence, while full non-repudiation requires identity binding, secure custody, and operational controls.\n"
         "• Cryptographic Key Separation (NIST FIPS 186-5 Section 5.1 / SP 800-57): A vital security mandate in asymmetric cryptography is strict key separation. "
         "NIST FIPS 186-5 Section 5.1 explicitly dictates that an RSA key pair designated for digital signatures shall not be used for any other purpose, such as key establishment or encryption (RSA-OAEP). "
         "Multi-purpose key reuse exposes systems to cross-protocol interaction attacks, undermines non-repudiation auditing, and expands compromise blast radius. "
@@ -309,13 +309,14 @@ def generate_report():
     p = add_p()
     p.add_run(
         "In industrial systems, RSA is deployed across three primary domains: "
-        "(1) Hybrid Encryption and RSA Key Transport: RSA is not used to encrypt large bulk data directly due to algebraic length constraints: under RFC 8017 Section 7.1.1 [2], "
-        "the maximum plaintext size for RSA-OAEP is bounded by mLen <= k - 2hLen - 2 (for a 2048-bit key k = 256 and SHA-256 hLen = 32, mLen <= 190 bytes). "
-        "Instead, RSA-OAEP is deployed for RSA key transport—encapsulating ephemeral symmetric keys (e.g., 256-bit AES-GCM)—combining asymmetric key establishment with high-throughput symmetric data streaming. "
+        "(1) Hybrid Encryption and RSA Key Transport: RSA is not used to encrypt bulk data directly due to algebraic length constraints: under RFC 8017 Section 7.1.1 [2], "
+        "plaintext size for RSA-OAEP is bounded by mLen <= k - 2hLen - 2 (190 bytes for RSA-2048 with SHA-256). "
+        "Instead, RSA-OAEP is deployed for RSA key transport—encapsulating ephemeral symmetric keys (e.g., 256-bit AES-GCM per NIST SP 800-56B Rev. 2 [5])—combining asymmetric key establishment with high-throughput symmetric streaming. "
         "(2) Code Signing and Firmware Integrity: Operating systems, application marketplaces, and secure bootloaders frequently deploy RSA digital signatures (including RSA-PSS and PKCS#1 v1.5) to verify executable integrity before launch. "
-        "(3) Digital Certificates and PKI: In TLS 1.3 (RFC 9846 [3], superseding RFC 8446), static RSA key exchange was entirely removed in favor of ephemeral Diffie-Hellman ((EC)DHE) and post-quantum hybrid KEMs to guarantee forward secrecy. "
-        "RSA's modern TLS 1.3 role is strictly endpoint authentication: RSA X.509 certificates authenticate servers, and CertificateVerify handshake messages require RSA-PSS signatures. "
-        "While RFC 9963 provides a specialized legacy exception for client certificate authentication with PKCS#1 v1.5 in restricted enterprise environments, server RSA authentication in TLS 1.3 mandates RSA-PSS."
+        "(3) Digital Certificates and PKI: In TLS 1.3 (RFC 9846 [3], superseding RFC 8446), static RSA key exchange was entirely removed in favor of ephemeral Diffie-Hellman ((EC)DHE) and PSK-DHE (psk_dhe_ke) to guarantee forward secrecy. "
+        "In contrast, PSK-only mode (psk_ke) does not provide forward secrecy against compromised pre-shared keys, and 0-RTT early data lacks forward secrecy and is vulnerable to replay attacks. "
+        "Post-quantum forward secrecy additionally requires negotiating a supported hybrid mechanism (e.g., RFC 10024). "
+        "Thus, RSA's modern TLS 1.3 role is strictly endpoint authentication: RSA X.509 certificates authenticate servers via RSA-PSS CertificateVerify messages (RFC 9846), while RFC 9963 provides a restricted legacy exception for client authentication with PKCS#1 v1.5 in constrained environments."
     )
 
     # -------------------------------------------------------------
@@ -434,11 +435,11 @@ def generate_report():
         "message representative produced by EMSA-PSS-ENCODE(M) (RFC 8017 Section 8.1 / 9.1 [2]). The correct signature s satisfies s^e ≡ m (mod n). "
         "In the two-signature formulation (Boneh et al. [7]), if an induced hardware fault corrupts s_q into s'_q while s_p remains uncorrupted, the faulty signature s' satisfies "
         "s' ≡ s (mod p) and s' ≢ s (mod q), yielding gcd(s − s′, n) = p. Conversely, if s_p is corrupted, gcd(s − s′, n) = q. Thus, gcd(s − s′, n) ∈ {p, q}. "
-        "Alternatively, under the single-signature formulation with a known message representative m = OS2IP(EM), a single faulty signature reveals gcd((s')^e − m, n) ∈ {p, q}. "
-        "This single-signature attack assumes the adversary knows m; while deterministic schemes expose m directly from the hash, randomized RSA-PSS incorporates a random salt that obscures m "
-        "from external observers, though internal verification circuits retain full access. Defending against CRT fault attacks requires separate countermeasures from blinding: "
-        "specifically, post-computation signature verification—where the signer verifies the recovered representative m' = (s^e mod n) against the EMSA-PSS representative m = OS2IP(EM) "
-        "and validates EMSA-PSS encoding consistency before releasing s—or redundant fault-detection circuitry."
+        "Alternatively, under the single-fault formulation, an attacker knowing m can factor the modulus via gcd((s')^e − m, n) ∈ {p, q}. "
+        "In RSA-PSS, the randomized salt is unmasked and checked during verification (it is not a secret), but because m is randomized, an adversary cannot precompute m from message M alone without the salt; "
+        "however, once any valid signature s is observed, m is readily recovered via s^e mod n. Hence, the two-signature attack gcd(s − s', n) ∈ {p, q} remains directly applicable. "
+        "Base blinding mitigates timing side channels, NOT CRT fault injection. Defending against CRT fault attacks requires separate countermeasures: "
+        "specifically, post-computation signature verification—where the signer verifies m' = (s^e mod n) against m = OS2IP(EM) and checks EMSA-PSS consistency before releasing s—or fault-detecting co-processors."
     )
 
     # -------------------------------------------------------------
@@ -527,7 +528,7 @@ def generate_report():
         "(2) Address and Validation Logic: Address checking is a prototype-level format sanity check (verifying 0x hex prefix and length), whereas production gateways require full checksum validation (EIP-55 for Ethereum, Bech32/Bech32m for Bitcoin) alongside business-tier balance checks, withdrawal thresholds, and AML screening. "
         "(3) Serialization Scope: The payload serializer applies deterministic key sorting and compact UTF-8 encoding; it does not implement full RFC 8785 (JCS) compliance. "
         "(4) Key Lifecycle and Trust: The verifier operates on pre-provisioned trusted public keys without a complete PKI, automated certificate path validation, revocation (CRLs/OCSP), or automated key rotation. "
-        "(5) Key Custody: Signing private keys reside in process memory for educational demonstration, whereas production gateways mandate dedicated hardware custody within FIPS 140-2/3 Level 3 HSMs or secure enclaves."
+        "(5) Key Custody: Signing private keys reside in process memory for educational demonstration, whereas production systems deploy appropriately validated HSMs or secure hardware (e.g., FIPS 140-2/3 validated HSMs, cloud HSM services, or secure enclaves) based on the operational threat model, regulatory environment, and institutional key-management policies."
     )
 
     # -------------------------------------------------------------

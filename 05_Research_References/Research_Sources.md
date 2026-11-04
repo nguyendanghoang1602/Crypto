@@ -17,10 +17,10 @@ This document catalogs the primary technical standards, specifications, and foun
 - **Document Title:** PKCS #1: RSA Cryptography Specifications Version 2.2
 - **Authors:** Kathleen Moriarty, Burt Kaliski, Jakob Jonsson, and Andreas Rusch
 - **Publishing Organization:** Internet Engineering Task Force (IETF)
-- **Series & Number:** Request for Comments (RFC) 8017 (Standards Track)
+- **Series & Number:** Request for Comments (RFC) 8017 (Informational)
 - **Publication Date:** November 2016
 - **Official URL:** https://www.rfc-editor.org/rfc/rfc8017
-- **Usage in Report:** Definitive technical specification for RSA key representations, the RSASP1/RSAVP1 primitives, RSA-OAEP encryption key transport constraints ($mLen \le k - 2hLen - 2$), and RSA-PSS digital signature encoding (EMSA-PSS) with tight security reduction in the Random Oracle Model. Also defines the integer message representative $m = \text{OS2IP}(EM)$ and verification checks ($m' = s^e \bmod n$) used to detect CRT fault injection.
+- **Usage in Report:** Definitive technical specification for RSA key representations, cryptographic primitives (`RSASP1`, `RSAVP1`, `OS2IP`, `I2OSP`), RSA-OAEP encryption key transport constraints ($mLen \le k - 2hLen - 2$; 190 bytes for RSA-2048 with SHA-256), and RSA-PSS digital signature encoding (`EMSA-PSS-ENCODE`, `EMSA-PSS-VERIFY`). Documents that RSA-OAEP achieves IND-CCA2 security in the Random Oracle Model (Bellare-Rogaway 1994, Shoup 2001, Fujisaki et al. 2001) under RSA partial-domain one-wayness (though the concrete reduction is non-tight), whereas RSA-PSS achieves a tight EUF-CMA reduction in the ROM. Crucially, establishes the complete signing and verification sequences, emphasizing that modular exponentiation (`RSAVP1`, computing $s^e \bmod n$) alone does not establish signature validity without full `EMSA-PSS-VERIFY` salt unmasking and padding verification.
 
 ---
 
@@ -32,7 +32,7 @@ This document catalogs the primary technical standards, specifications, and foun
 - **Publication Date:** July 2026
 - **Official URL:** https://www.rfc-editor.org/rfc/rfc9846
 - **Complementary Standards:** RFC 9963 ("Legacy RSASSA-PKCS1-v1_5 Code Points for TLS 1.3", April 2026) and RFC 10024 ("Post-Quantum Traditional (PQ/T) Hybrid Key Agreement Mechanisms for TLS 1.3", August 2026)
-- **Usage in Report:** Referenced in Sections 1, 2.3, 4.3, and 6 to establish that TLS 1.3 removed static RSA key exchange in favor of ephemeral Diffie-Hellman ((EC)DHE) and post-quantum hybrid KEMs. Establishes that RSA's modern TLS 1.3 role is strictly endpoint authentication, where RSA-PSS is required for server `CertificateVerify` messages, with RFC 9963 providing a restricted legacy exception for client certificate authentication.
+- **Usage in Report:** Referenced in Sections 1, 2.3, 4.3, and 6 to establish that TLS 1.3 removed static RSA key exchange. Clarifies that Forward Secrecy is provided by ephemeral key exchange ((EC)DHE) and PSK-DHE (`psk_dhe_ke`), whereas PSK-only mode (`psk_ke`) lacks forward secrecy against compromised pre-shared keys, and 0-RTT early data lacks forward secrecy and is vulnerable to replay attacks. Post-quantum hybrid protection depends on negotiating a supported hybrid mechanism (e.g., RFC 10024). Establishes that RSA's modern TLS 1.3 role is strictly endpoint authentication, where RSA-PSS is required for server `CertificateVerify` messages (RFC 9846), with RFC 9963 providing a restricted legacy exception for client certificate authentication.
 
 ---
 
@@ -73,7 +73,7 @@ This document catalogs the primary technical standards, specifications, and foun
 - **Authors:** Dan Boneh, Richard A. DeMillo, and Richard J. Lipton
 - **Publication Venue:** *Journal of Cryptology*, vol. 14, no. 2, pp. 101–119, 2001 (preliminary version in *Eurocrypt 1997*).
 - **DOI / URL:** https://doi.org/10.1007/s001450010016
-- **Usage in Report:** Cited in Section 3.2 to formulate the Bellcore hardware fault-injection attack on Chinese Remainder Theorem (CRT) RSA signatures, proving that an induced fault on one prime branch yields $\gcd(s - s', n) \in \{p, q\}$, exposing a nontrivial factor of $n = p \cdot q$, and motivating post-computation verification before signature release.
+- **Usage in Report:** Cited in Section 3.2 to formulate the Bellcore hardware fault-injection attack on Chinese Remainder Theorem (CRT) RSA implementations. Details both the two-signature formulation ($\gcd(s - s', n) \in \{p, q\}$) when a valid signature $s$ is available, and the single-fault formulation ($\gcd((s')^e - m, n) \in \{p, q\}$) when message representative $m = \text{OS2IP}(EM)$ is known. Clarifies that the PSS salt is unmasked during verification (not a secret), but because $m$ is randomized, $m$ cannot be precomputed from $M$ alone without the salt; once a valid signature $s$ is observed, $m = s^e \bmod n$ is recovered. Highlights that base blinding ($x' = x \cdot r^e \bmod n$) mitigates timing side channels, NOT CRT fault attacks, which require post-computation signature verification or fault-detection circuitry.
 
 ---
 
