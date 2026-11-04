@@ -1,6 +1,6 @@
 # Authoritative Technical References and Primary Research Sources
 
-This document catalogs the 22 primary technical standards, specifications, and foundational research sources utilized in the academic report **"Real-World Applications of RSA: Cryptographic Foundations, Practical Implementation, and Off-Chain Blockchain Authentication"**. The numbering corresponds directly to Section 7 (References) in the primary Word deliverable (`RSA_Real_World_Applications_Report.docx`).
+This document catalogs the 23 primary technical standards, specifications, and foundational research sources utilized in the academic report **"Real-World Applications of RSA: Cryptographic Foundations, Practical Implementation, and Off-Chain Blockchain Authentication"**. The numbering corresponds directly to Section 7 (References) in the primary Word deliverable (`RSA_Real_World_Applications_Report.docx`).
 
 ---
 
@@ -20,7 +20,7 @@ This document catalogs the 22 primary technical standards, specifications, and f
 - **Series & Number:** Request for Comments (RFC) 8017 (Informational)
 - **Publication Date:** November 2016
 - **Official URL:** https://www.rfc-editor.org/rfc/rfc8017
-- **Usage in Report:** Definitive technical specification for RSA key representations, cryptographic primitives (`RSASP1`, `RSAVP1`, `OS2IP`, `I2OSP`), RSA-OAEP encryption key transport constraints ($mLen \le k - 2hLen - 2$; 190 bytes for RSA-2048 with SHA-256), and RSA-PSS digital signature encoding (`EMSA-PSS-ENCODE`, `EMSA-PSS-VERIFY`). As an IETF Informational document, RFC 8017 specifies the concrete engineering implementation of these schemes; the underlying theoretical security proofs are established in the academic research literature (with RSA-OAEP proven IND-CCA2 in the Random Oracle Model under the standard RSA one-wayness assumption by Fujisaki et al. [16] following Shoup's analysis [15] of Bellare-Rogaway [17], while RSA-PSS achieves a tight EUF-CMA reduction in the ROM [3], [4]). Crucially, establishes the complete signing and verification sequences, emphasizing that modular exponentiation (`RSAVP1`, computing $s^e \bmod n$) alone does not establish signature validity without full `EMSA-PSS-VERIFY` salt unmasking and padding verification.
+- **Usage in Report:** Definitive technical specification for RSA key representations, cryptographic primitives (`RSASP1`, `RSAVP1`, `OS2IP`, `I2OSP`), RSA-OAEP encryption key transport constraints ($mLen \le k - 2hLen - 2$; 190 bytes for RSA-2048 with SHA-256), and RSA-PSS digital signature encoding (`EMSA-PSS-ENCODE`, `EMSA-PSS-VERIFY`). As an IETF Informational document, RFC 8017 specifies the concrete engineering implementation of these schemes; the underlying theoretical security proofs are established in the academic research literature (with RSA-OAEP proven IND-CCA2 in the Random Oracle Model under the standard RSA one-wayness assumption by Fujisaki et al. [16] following Shoup's analysis [15] of Bellare-Rogaway [17], while RSA-PSS achieves an essentially tight EUF-CMA reduction to the RSA problem in the ROM established by Bellare and Rogaway [23]). Crucially, establishes the complete signing and verification sequences, emphasizing that modular exponentiation (`RSAVP1`, computing $s^e \bmod n$) alone does not establish signature validity without full `EMSA-PSS-VERIFY` salt unmasking and padding verification.
 
 ---
 
@@ -228,3 +228,12 @@ This document catalogs the 22 primary technical standards, specifications, and f
 - **Publication Date:** November 2007
 - **DOI / URL:** https://doi.org/10.6028/NIST.SP.800-38D
 - **Usage in Report:** Cited in Section 2.2 and Section 2.3 as the definitive technical standard specifying Galois/Counter Mode (AES-GCM) authenticated encryption, resolving the previous misattribution of AES-GCM to NIST SP 800-56B Rev. 2.
+
+---
+
+### [23] The Exact Security of Digital Signatures—How to Sign with RSA and Rabin
+- **Document Title:** The Exact Security of Digital Signatures—How to Sign with RSA and Rabin
+- **Authors:** Mihir Bellare and Phillip Rogaway
+- **Publication Venue:** *Advances in Cryptology – EUROCRYPT '96*, Lecture Notes in Computer Science (LNCS), vol. 1070, pp. 399–416, Springer-Verlag, 1996.
+- **DOI / URL:** https://doi.org/10.1007/3-540-68339-9_34
+- **Usage in Report:** Cited in Section 2.2 as the foundational academic research paper establishing the provable security of the Probabilistic Signature Scheme (PSS). Bellare and Rogaway introduced RSA-PSS and established its essentially tight security reduction to the RSA inversion problem in the Random Oracle Model (ROM) under existential unforgeability against chosen-message attacks (EUF-CMA). This paper is distinct from their earlier EUROCRYPT '94 research introducing OAEP (reference [17]). RFC 8017 [2] specifies the standardized engineering implementation, while Bellare and Rogaway [23] provide the underlying theoretical proof.

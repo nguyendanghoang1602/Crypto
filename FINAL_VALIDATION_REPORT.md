@@ -7,7 +7,7 @@
 
 ---
 
-## 1. REPOSITORY VERIFICATION
+## 1. REPOSITORY & WORKSPACE VERIFICATION
 
 - **Actual Git Repository Location:** `D:\Crypto_repo` (verified via `git rev-parse --show-toplevel`)
 - **Remote Origin URL:** `https://github.com/nguyendanghoang1602/Crypto.git` (verified via `git remote get-url origin`)
@@ -15,7 +15,26 @@
 
 ---
 
-## 2. BENCHMARK STRUCTURE & MEASUREMENT COUNT
+## 2. SUMMARY OF ACADEMIC CORRECTIONS (FINAL AUDIT)
+
+The final academic revision incorporates all 12 required technical corrections across theory, engineering, and course alignment:
+
+1. **RSA-PSS Security Proof (Reference [23]):** Added Bellare and Rogaway (EUROCRYPT '96, LNCS 1070 [23]) as the original academic source proving the essentially tight security reduction of RSA-PSS to the RSA inversion problem in the Random Oracle Model (ROM). Clarified that RFC 8017 [2] specifies the engineering standard, distinct from Bellare-Rogaway EUROCRYPT '94 (OAEP, [17]).
+2. **SHA-256 vs. Homomorphic Forgery:** Explicitly clarified that SHA-256 provides a fixed-length digest and makes signing long messages practical, but hashing alone does not eliminate textbook RSA's multiplicative homomorphism. EUF-CMA security is provided by RSA-PSS's structured encoding (EMSA-PSS), randomized salt, and verification process.
+3. **AES-GCM Key Transport Terminology:** Corrected phrasing to "a 256-bit AES key used with AES-GCM" (NIST SP 800-38D [22]), maintaining the distinction between asymmetric key transport (RSA-OAEP) and symmetric bulk authenticated encryption.
+4. **TLS 1.3 Certificate Authentication:** Disentangled three distinct concepts: (i) X.509 certificate identity binding via CA signature; (ii) CertificateVerify proving private-key possession over the handshake transcript; and (iii) RFC 9846 [3] strictly requiring RSA-PSS for CertificateVerify when RSA server keys are used (the CA signature itself is not required to be RSA-PSS), with RFC 9963 [18] legacy client exceptions preserved.
+5. **ECDSA Nonce Hazards vs. Nonce Bias:** Delineated exact nonce reuse ($s_1 - s_2 \equiv k^{-1}(z_1 - z_2) \pmod n$) allowing direct two-signature algebraic recovery from slight nonce bias/leakage, which requires multiple signatures and lattice-based Hidden Number Problem (HNP) techniques.
+6. **RSA Public Exponent:** Replaced rigid standard assertions with "commonly chosen as 65,537, which is a Fermat prime ($e = 2^{16} + 1$)."
+7. **GNFS vs. Pollard's Rho:** Clarified that GNFS has sub-exponential complexity for factoring $n=p\cdot q$, whereas Pollard's rho has expected fully exponential complexity $\mathcal{O}(\sqrt{q})$ in a cyclic group of prime order $q$, explaining why RSA requires substantially larger keys (RSA-3072 $\approx$ 128-bit) per NIST SP 800-56B [5] and SP 800-57 [6].
+8. **Theoretical Operation Counts vs. Empirical Latency:** Clarified that modular multiplications and ECC group additions represent distinct primitive operations whose counts cannot be directly equated, validating performance conclusions empirically via measured benchmark latency.
+9. **Restrained Wycheproof Interpretation:** Reframed the bundled 108-vector test suite as demonstrating agreement with that selected test set (63 valid accepted, 45 invalid rejected) rather than claiming full protocol certification or absence of all vulnerabilities.
+10. **ETH Atomic Units:** Corrected description to "Valid request of 12.5 ETH, represented as an integer amount in wei (12,500,000,000,000,000,000 wei)."
+11. **Key Separation Rationale:** Grounded NIST FIPS 186-5 Section 5.1 [4] key separation in preventing cross-protocol interactions, enforcing cryptographic purpose separation, and reducing compromise impact, without overbroad theoretical claims.
+12. **Production Security Requirements:** Reframed HSMs, PKI, revocation, and Redis/SQL distributed replay mechanisms as production architecture requirements appropriate to the system; refined authentication terminology to MFA and OpenID Connect.
+
+---
+
+## 3. BENCHMARK STRUCTURE & MEASUREMENT COUNT
 
 The empirical benchmark dataset in `03_Experimental_Data/raw_benchmark_logs/raw_trials_all_algorithms.csv` and `benchmark_results.csv` contains exactly **840 raw measurements** with the following verified structure:
 
@@ -26,22 +45,14 @@ The empirical benchmark dataset in `03_Experimental_Data/raw_benchmark_logs/raw_
   - Signature verification: 100 measurements per algorithm ($4 \times 100 = 400\text{ measurements}$).
 - **Aggregate Total:** $40 + 400 + 400 = 840\text{ measurements}$.
 
-*Note:* Any prior mention of "14 algorithm configurations × 60 trials" in transitional review logs was a historical typographic discrepancy. The actual raw and aggregated benchmark CSV files are 100% intact and preserved.
-
 ---
 
-## 3. BITCOIN RSA-2048 WITNESS ASSUMPTION
+## 4. BIBLIOGRAPHY CITATION CROSS-REFERENCE TABLE (23 REFERENCES)
 
-The hypothetical Bitcoin witness calculation in Section 3.1 ($1 + 3 + 256 + 3 + 256 = 519\text{ bytes}$) is rigorously formulated under the explicit simplified assumption of a 256-byte modulus payload (treating the standard public exponent $e = 65,537$ as implicit or fixed, rather than a full DER-encoded public key which spans $\approx 294\text{ bytes}$). This adds $\approx 410\text{–}412\text{ witness bytes}$ ($\approx 103\text{ virtual bytes}$ under BIP 141), representing an approximate 73% increase over the 141-vB baseline transaction. The report explicitly emphasizes that native Bitcoin consensus rules do not support RSA verification, framing this purely as a theoretical illustration of why consensus layers mandate compact elliptic curve signatures.
-
----
-
-## 4. BIBLIOGRAPHY CITATION CROSS-REFERENCE TABLE
-
-| Reference | Standard / Document | In-Text Citation Location | Bibliography Status | Verified |
+| Reference | Standard / Literature | In-Text Citation Location | Bibliography Status | Verified |
 | :--- | :--- | :--- | :--- | :---: |
 | **[1]** | Rivest, Shamir, & Adleman (1978/1977) | Section 1, Section 2.1 | CACM / MIT Memorandum | **YES** |
-| **[2]** | PKCS #1 v2.2 (RFC 8017) | Section 1, Section 2.1, Section 2.2, Section 3.2 | IETF Informational | **YES** |
+| **[2]** | PKCS #1 v2.2 (RFC 8017) | Section 1, Section 2.1, Section 2.2 | IETF Informational | **YES** |
 | **[3]** | TLS 1.3 Protocol (RFC 9846, supersedes RFC 8446) | Section 1, Section 2.3 | IETF Standards Track | **YES** |
 | **[4]** | Digital Signature Standard (NIST FIPS 186-5) | Section 2.2 | NIST Standard (Key Separation) | **YES** |
 | **[5]** | Pair-Wise Key Establishment (NIST SP 800-56B Rev. 2) | Section 2.2, Section 2.3, Section 3, Table 1, Table 2 | 6 authors (incl. Scott Simon) | **YES** |
@@ -62,6 +73,7 @@ The hypothetical Bitcoin witness calculation in Section 3.1 ($1 + 3 + 256 + 3 + 
 | **[20]** | Module-Lattice-Based DSS (NIST FIPS 204) | Section 6 (Conclusion) | NIST Standard (ML-DSA) | **YES** |
 | **[21]** | Stateless Hash-Based DSS (NIST FIPS 205) | Section 6 (Conclusion) | NIST Standard (SLH-DSA) | **YES** |
 | **[22]** | Galois/Counter Mode AES-GCM (NIST SP 800-38D) | Section 2.2, Section 2.3 | NIST Special Publication | **YES** |
+| **[23]** | Exact Security of Signatures (Bellare-Rogaway, 1996) | Section 2.2 | EUROCRYPT '96 / LNCS 1070 | **YES** |
 
 ---
 
@@ -69,15 +81,13 @@ The hypothetical Bitcoin witness calculation in Section 3.1 ($1 + 3 + 256 + 3 + 
 
 - **Primary Word Document:** Exactly **5 A4 pages** (`doc.ComputeStatistics(2) == 5`).
 - **Rendered PDF Document:** Exactly **5 Pages** (`len(pdf) == 5`).
-- **Word Count:** **4,729 words**.
-- **Paragraph Count:** **137 paragraphs**.
-- **Character Count (w/ spaces):** **30,238 characters**.
-- **Table 2 Placement:** Table 2 caption and **all four data rows** (RSA-2048, RSA-3072, RSA-4096, ECDSA-secp256k1) reside entirely on **Page 4** with 89.1 pt bottom margin clearance.
-- **Algorithm 1:** Boxed and unified on **Page 4** (`w:cantSplit`, `keep_together`).
-- **Figures:**
-  - Figure 1: Operational workflow of RSA-PSS (Page 2).
-  - Figure 2: Off-chain cryptocurrency withdrawal architecture (Page 3).
-  - Figure 3: Empirical median latency comparison chart (Page 5).
+- **Word Count:** **4,646 words**.
+- **Page-by-Page Structural Distribution:**
+  - **Page 1:** Title, Metadata, Abstract, Keywords, Section 1 (Introduction), Section 2.1 (Math Foundations).
+  - **Page 2:** Section 2.2 (OAEP vs. PSS, Key Separation), Figure 1 (RSA-PSS Workflow), Section 2.3 (Applications), Section 3 (Why RSA?), Table 1 (Comparison Table + Caption), Section 3.1 start.
+  - **Page 3:** Section 3.1 (Blockchain Trade-offs), Section 3.2 (Operational Value, CRT Faults), Section 4 (Proposed Design), Section 4.1 (Component Decomposition), Figure 2 (Architecture Diagram + Caption).
+  - **Page 4:** Section 4.2 (Deterministic JSON), Algorithm 1 (Unified Box), Section 4.3 (Prototype Scope), Section 5 (Experimental Results), Section 5.1 (Scenarios), Section 5.2 (Wycheproof), Section 5.3 (Benchmark Intro), Table 2 Caption, Table 2 (All 4 rows unified).
+  - **Page 5:** Figure 3 (Performance Chart + Caption), Performance Discussion (3 points), Section 6 (Conclusion), Section 7 (References [1]–[23] concluding cleanly).
 - **Wycheproof Compliance:** **108 / 108 test cases passing** (63 valid accepted, 45 invalid rejected, 0 failures).
 - **Operational Scenarios:** 5 / 5 target security scenarios validated.
 - **Protected File Status:** `rsa_pss_experiment.py`, `generate_figures.py`, `benchmark_results.csv`, `raw_trials_all_algorithms.csv`, figure images, and Wycheproof test vectors remain **100% UNMODIFIED**.
@@ -88,7 +98,7 @@ The hypothetical Bitcoin witness calculation in Section 3.1 ($1 + 3 + 256 + 3 + 
 
 | Deliverable File | Size (Bytes) | SHA-256 Hash |
 | :--- | :--- | :--- |
-| `01_Final_Report/RSA_Real_World_Applications_Report.docx` | 456,330 | `77d74bc4e15cf5bb3bf7f4cbf99866b0275ee1de27788ea68f35f1d62603ce79` |
-| `01_Final_Report/RSA_Real_World_Applications_Report.pdf` | 468,056 | `449a0fb198c4ea4363c5fdaec8b561e3fea19a75278b443965aae948ec677356` |
-| `02_Source_Code/build_report_doc.py` | 58,504 | `8f1f15aed94220471f2b6a84df1fe58f3002d164f270a9a2fff508028c6957d2` |
-| `05_Research_References/Research_Sources.md` | 20,586 | `2af3e0672f105b6dd83fbb2225004738bbe392b7af8b1474b6385a75be2993b1` |
+| `01_Final_Report/RSA_Real_World_Applications_Report.docx` | 456,030 | `c30f3e6ab7a5737233833fc3825bfff1f319976e6c8dd7a3c919e024494ae227` |
+| `01_Final_Report/RSA_Real_World_Applications_Report.pdf` | 447,989 | `a6fb7c38198eea8864588d947ee5b5afcd110006c99fc6cfb63a513928d347f0` |
+| `02_Source_Code/build_report_doc.py` | 59,134 | `11016ab7cb1b6dec58b6176c1631e376306c942046c42c43eebb655459d0d157` |
+| `05_Research_References/Research_Sources.md` | 21,982 | `549eed32cb7aabd1a71812f96ccc3ef13a96af84de7d69e7762a7b10c9758336` |
