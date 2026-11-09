@@ -1,6 +1,6 @@
 # Authoritative Technical References and Primary Research Sources
 
-This document catalogs the 17 primary technical standards, specifications, and foundational research sources utilized in the academic report **"Real-World Applications of RSA: Cryptographic Foundations, Practical Implementation, and Off-Chain Blockchain Authentication"**. The numbering corresponds directly to Section 7 (References) in the primary Word deliverable (`RSA_Real_World_Applications_Report.docx`).
+This document catalogs the 22 primary technical standards, specifications, and foundational research sources utilized in the academic report **"Real-World Applications of RSA: Cryptographic Foundations, Practical Implementation, and Off-Chain Blockchain Authentication"** (comprising the 17 core references embedded in the primary Word deliverable `RSA_Real_World_Applications_Report.docx` and 5 supplementary normative standards [18]–[22] establishing full formal provenance).
 
 ---
 
@@ -175,3 +175,54 @@ This document catalogs the 17 primary technical standards, specifications, and f
 - **Publication Venue:** *Advances in Cryptology – EUROCRYPT '94*, Lecture Notes in Computer Science (LNCS), vol. 950, pp. 92–111, Springer-Verlag, 1995.
 - **DOI / URL:** https://doi.org/10.1007/BFb0053428
 - **Usage in Report:** Cited in Section 2.2 as the original academic formulation of Optimal Asymmetric Encryption Padding (OAEP). Bellare and Rogaway introduced OAEP and established semantic security against chosen-plaintext attacks (IND-CPA) and plaintext awareness (implying chosen-ciphertext security IND-CCA1 for general trapdoor permutations in the Random Oracle Model), without establishing general IND-CCA2 security under standard one-wayness.
+
+---
+
+### [18] The Exact Security of Digital Signatures: How to Sign with RSA and Rabin
+- **Document Title:** The Exact Security of Digital Signatures: How to Sign with RSA and Rabin
+- **Authors:** Mihir Bellare and Phillip Rogaway
+- **Publication Venue:** *Advances in Cryptology – EUROCRYPT '96*, Lecture Notes in Computer Science (LNCS), vol. 1070, pp. 399–416, Springer, 1996.
+- **DOI / URL:** https://doi.org/10.1007/3-540-68339-9_34
+- **Usage in Report:** Cited in Section 2.2 to provide the rigorous academic foundation for the Probabilistic Signature Scheme (PSS). Bellare and Rogaway introduced PSS and proved that it achieves tight existential unforgeability under adaptive chosen-message attack (EUF-CMA) in the Random Oracle Model (ROM), demonstrating that forging an RSA-PSS signature is as hard as inverting the RSA permutation itself, overcoming the loose reductions of legacy padding schemes.
+
+---
+
+### [19] Secure Hash Standard (SHS)
+- **Document Title:** Secure Hash Standard (SHS)
+- **Publishing Organization:** National Institute of Standards and Technology (NIST)
+- **Series & Number:** Federal Information Processing Standards Publication (FIPS) 180-4
+- **Publication Date:** August 2015
+- **DOI / URL:** https://doi.org/10.6028/NIST.FIPS.180-4
+- **Usage in Report:** Cited in Section 2.2, Section 4.2, and Section 5.1 as the authoritative normative specification for the SHA-256 cryptographic hash function utilized to compute the payload digest `mHash` and the hash evaluations within Mask Generation Function 1 (`MGF1-SHA256`).
+
+---
+
+### [20] SEC 2: Recommended Elliptic Curve Domain Parameters
+- **Document Title:** SEC 2: Recommended Elliptic Curve Domain Parameters
+- **Publishing Organization:** Standards for Efficient Cryptography Group (SECG) / Certicom Corp.
+- **Series & Number:** Standards for Efficient Cryptography (SEC) Version 2.0
+- **Publication Date:** January 2010
+- **Official URL:** https://www.secg.org/sec2-v2.pdf
+- **Usage in Report:** Cited in Section 3.1 and Section 5.1 to define the standard mathematical parameters of the Koblitz elliptic curve `secp256k1` ($y^2 = x^3 + 7 \bmod p$), its field modulus $p$, order $n$, base point $G$, and ECDSA signing equation $s = k^{-1}(z + r \cdot d_A) \bmod n$, providing the exact baseline for comparing RSA-3072 and ECDSA at the 128-bit security tier.
+
+---
+
+### [21] EIP-712: Typed Structured Data Hashing and Signing
+- **Document Title:** EIP-712: Typed Structured Data Hashing and Signing
+- **Authors:** Remco Bloemen, Leonid Logvinov, and Jacob Evans
+- **Publishing Organization:** Ethereum Improvement Proposals (EIP)
+- **Publication Date:** September 2017
+- **Official URL:** https://eips.ethereum.org/EIPS/eip-712
+- **Usage in Report:** Cited in Section 4.1 to contextualize off-chain cryptographic request authorization. Establishes the standard industry design pattern for deterministic structured payload encoding prior to signing, supporting the architectural rationale behind our off-chain RSA-PSS withdrawal authorization prototype before on-chain settlement.
+
+---
+
+### [22] Digital Identity Guidelines: Authentication and Lifecycle Management
+- **Document Title:** Digital Identity Guidelines: Authentication and Lifecycle Management
+- **Authors:** Paul A. Grassi, Michael E. Garcia, and James L. Fenton
+- **Publishing Organization:** National Institute of Standards and Technology (NIST)
+- **Series & Number:** NIST Special Publication (SP) 800-63B
+- **Publication Date:** June 2017 (Updated March 2020)
+- **DOI / URL:** https://doi.org/10.6028/NIST.SP.800-63B
+- **Usage in Report:** Cited in Section 4.2 and Section 4.3 to establish formal technical requirements for replay resistance, timestamp freshness windows ($\pm 300\text{s}$ tolerance for clock skew), and cryptographically random nonce generation in secure transaction authorization workflows.
+

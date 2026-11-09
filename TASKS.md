@@ -10,7 +10,7 @@
 
 ## M01 — Repository Audit & Baseline
 
-- [ ] M01: Audit repository structure, current project state, and integrity baseline.
+- [x] M01: Audit repository structure, current project state, and integrity baseline.
 
 **Scope:**
 - `README.md`
@@ -39,7 +39,7 @@
 
 ## M02 — Environment & Reproducibility
 
-- [ ] M02: Verify dependencies, runtime environment, and reproducible execution.
+- [x] M02: Verify dependencies, runtime environment, and reproducible execution.
 
 **Scope:**
 - `06_Environment/`
@@ -61,7 +61,7 @@
 
 ## M03 — RSA Cryptographic Implementation Audit
 
-- [ ] M03: Audit RSA-PSS, hashing, key handling, and deterministic serialization.
+- [x] M03: Audit RSA-PSS, hashing, key handling, and deterministic serialization.
 
 **Scope:**
 - `02_Source_Code/rsa_pss_experiment.py`
@@ -83,7 +83,7 @@
 
 ## M04 — Request Validation & Replay Protection
 
-- [ ] M04: Audit timestamp, nonce, payload validation, and replay handling.
+- [x] M04: Audit timestamp, nonce, payload validation, and replay handling.
 
 **Scope:**
 - `02_Source_Code/rsa_pss_experiment.py`
@@ -105,7 +105,7 @@
 
 ## M05 — Adversarial Tests & Wycheproof
 
-- [ ] M05: Execute tampering, replay, invalid-key, and Wycheproof test coverage.
+- [x] M05: Execute tampering, replay, invalid-key, and Wycheproof test coverage.
 
 **Scope:**
 - `02_Source_Code/`
@@ -127,7 +127,7 @@
 
 ## M06 — Benchmark Reproduction
 
-- [ ] M06: Re-run RSA and ECDSA benchmarks and verify reported performance claims.
+- [x] M06: Re-run RSA and ECDSA benchmarks and verify reported performance claims.
 
 **Scope:**
 - `02_Source_Code/`
@@ -150,7 +150,7 @@
 
 ## M07 — Figures, References & Standards Audit
 
-- [ ] M07: Verify figures, bibliography, and standards-related statements.
+- [x] M07: Verify figures, bibliography, and standards-related statements.
 
 **Scope:**
 - `04_Figures/`
@@ -265,7 +265,7 @@ Do not consume a fallback round for cosmetic changes. Each round must address a 
 
 ## Progress Summary
 
-- Completed milestones: 0/10
-- Current milestone: M01
+- Completed milestones: 7/10
+- Current milestone: M08
 - Remaining fallback rounds: 5/5
 - Primary deliverable: 4–5 page report
