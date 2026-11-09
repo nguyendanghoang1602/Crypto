@@ -160,10 +160,13 @@ Do not:
 
 When evidence contradicts the report, prioritize verified evidence and document the correction.
 
-## 11. Milestone Verification Baseline (M01–M05 Verified Status)
+## 11. Milestone Verification Baseline (M01–M08 Verified Status)
 
 - **M01 (Repository Baseline):** Report-first model verified; 18/18 manifest files present on disk.
 - **M02 (Environment):** Isolated `.venv` provisioned with Python 3.13.14 and `cryptography==50.0.2` (OpenSSL 4.0.3 backend).
 - **M03 (Cryptographic Implementation):** RSASSA-PSS parameters verified ($e=65537$, SHA-256, MGF1-SHA256, salt=32 B); application-level JSON serializer delineated from RFC 8785.
 - **M04 (Request Validation & Freshness):** Exact ±300s timestamp window confirmed; in-memory replay prevention verified with documented process-local and memory accumulation boundaries.
-- **M05 (Adversarial & Wycheproof):** 108/108 Wycheproof test vectors categorized (63 valid accepted, 45 invalid rejected); signature corruption, bit flips, truncation, parameter mismatch, and nonce squatting verified by test.
+- **M05 (Adversarial & Wycheproof):** 108/108 Wycheproof test vectors categorized (63 valid accepted, 45 invalid rejected, 0 skipped, 0 harness errors); signature corruption, bit flips, truncation, parameter mismatch, and nonce squatting verified by test.
+- **M06 (Benchmark Reproduction):** Re-run empirical benchmarks executed (exit code 0); RSA-3072 verify median 0.0392 ms (6.18× faster than ECDSA at 0.2423 ms); ECDSA sign median 0.2553 ms (5.82× faster than RSA-3072 at 1.4849 ms); zero warm-up harness condition documented.
+- **M07 (Figures & References):** 22 primary technical references verified against official registries; 3 report figures audited (300 DPI) and benchmark visualization regenerated with active M06 data.
+- **M08 (Report Consistency Audit):** Primary deliverable `01_Final_Report/RSA_Real_World_Applications_Report.docx` synchronized with active M06 metrics, zero warm-up methodology disclosure, neutral dual-environment metadata, and explicit authorization vs. identity scope boundaries.

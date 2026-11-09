@@ -173,7 +173,7 @@
 
 ## M08 — Report & Evidence Consistency Review
 
-- [ ] M08: Cross-check the report against code, tests, benchmarks, and references.
+- [x] M08: Cross-check the report against code, tests, benchmarks, and references.
 
 **Scope:**
 - `01_Final_Report/`
@@ -199,7 +199,7 @@
 
 ## M09 — Final Report Editing & Layout
 
-- [ ] M09: Polish the final report to approximately 4–5 A4 pages.
+- [x] M09: Polish the final report to approximately 4–5 A4 pages.
 
 **Scope:**
 - `01_Final_Report/`
@@ -265,7 +265,7 @@ Do not consume a fallback round for cosmetic changes. Each round must address a 
 
 ## Progress Summary
 
-- Completed milestones: 7/10
-- Current milestone: M08
+- Completed milestones: 9/10
+- Current milestone: M10
 - Remaining fallback rounds: 5/5
 - Primary deliverable: 4–5 page report
