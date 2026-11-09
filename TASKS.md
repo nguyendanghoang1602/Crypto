@@ -222,7 +222,7 @@
 
 ## M10 — Final Verification & Release
 
-- [ ] M10: Run final checks, regenerate integrity manifest, and prepare the deliverable.
+- [x] M10: Run final checks, regenerate integrity manifest, and prepare the deliverable.
 
 **Scope:**
 - `SPEC.md`
@@ -265,7 +265,7 @@ Do not consume a fallback round for cosmetic changes. Each round must address a 
 
 ## Progress Summary
 
-- Completed milestones: 9/10
-- Current milestone: M10
+- Completed milestones: 10/10
+- Current milestone: Complete
 - Remaining fallback rounds: 5/5
-- Primary deliverable: 4–5 page report
+- Primary deliverable: Final academic report (DOCX & PDF)

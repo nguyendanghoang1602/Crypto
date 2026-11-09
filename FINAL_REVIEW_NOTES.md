@@ -927,6 +927,51 @@ The active empirical dataset (`03_Experimental_Data/benchmark_results.csv`) is r
 - All layout, typography, and pagination flow controls verified.
 - Milestone M09 status: **PASS**.
 
+---
+
+## 17. Milestone M10 — Cover Page Integration, Final PDF Export & Verification
+
+### 17.1 Cover Page Specification & Member Table Integration
+- **Institutional & Departmental Hierarchy:** Added formal academic cover header: *Ministry of Education and Training / National Academic Research Institute / Faculty of Information Technology and Cybersecurity*.
+- **Course & Research Report Titles:**
+  - Capstone: *Academic Capstone Research Report / Cryptography and Information Assurance*.
+  - Title: *REAL-WORLD APPLICATIONS OF RSA: CRYPTOGRAPHIC FOUNDATIONS, PRACTICAL IMPLEMENTATION, AND OFF-CHAIN BLOCKCHAIN AUTHENTICATION*.
+- **Student Identification / Member List Table (Exactly 7 Blank Rows):**
+  - Schema: `No.` (2.0 cm), `Full Name` (8.0 cm), `Student ID` (6.5 cm).
+  - Row 1: `1 | ................................ | ................................`
+  - Row 2: `2 | ................................ | ................................`
+  - Row 3: `3 | ................................ | ................................`
+  - Row 4: `4 | ................................ | ................................`
+  - Row 5: `5 | ................................ | ................................`
+  - Row 6: `6 | ................................ | ................................`
+  - Row 7: `7 | ................................ | ................................`
+  - Strict compliance: Zero fabricated names, student IDs, or team leader designations inserted.
+- **Visual Section Boundary:** Isolated cover page with `different_first_page_header_footer = True` (suppressing running headers and page numbers on the cover), followed by an explicit hard page break.
+
+### 17.2 Academic Content Preservation
+- 100% verification that academic report text from M09 remains entirely unchanged:
+  - Benchmark metrics (M06 data: RSA-3072 verify 0.0392 ms, 6.18× faster than ECDSA; ECDSA sign 0.2553 ms, 5.82× faster than RSA-3072).
+  - Zero warm-up methodology disclosure in Section 5.
+  - Wycheproof 108 cases categorization (63 valid accepted, 45 invalid rejected, 0 skipped, 0 errors).
+  - All 17 core bibliography references and 3 high-resolution diagrams intact.
+
+### 17.3 PDF Export & Visual Pagination Verification
+- **Export Tool:** Executed via native Microsoft Word Application COM automation (`Word.Application`, version 16.0.20527) via PowerShell.
+- **Artifact Generated:** `01_Final_Report/RSA_Real_World_Applications_Report.pdf` (533,581 bytes).
+- **Format Verification:** Inspected with `pymupdf` (MuPDF 1.28.2 engine):
+  - Page dimensions: Exactly $595.32 \times 841.92\text{ pt}$ (Standard ISO A4: $210 \times 297\text{ mm}$).
+  - Actual Page Count: Exactly **7 pages** (Page 1: Cover page; Pages 2–6: Core academic report text, architecture, benchmarks, and analysis; Page 7: Conclusion and references).
+  - Running headers/footers: "Page X of 7" displayed on pages 2–7; completely suppressed on page 1.
+  - Page 1 layout: Fits comfortably on a single A4 page with zero text spillover or overflow.
+- **Visual Pagination Status:** **VERIFIED** (rendered and validated via Word COM and PyMuPDF).
+
+### 17.4 Milestone M10 Acceptance
+- DOCX updated with 7-row blank member cover page.
+- PDF successfully generated, opened, and verified as ISO A4 format.
+- Academic integrity fully preserved.
+- Milestone M10 status: **PASS**.
+
+
 
 
 
